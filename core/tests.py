@@ -46,3 +46,21 @@ def test_dashboard_only_own_projects(client):
     content = resp.content.decode()
     assert "Propio" in content
     assert "Ajeno" not in content
+
+
+@pytest.mark.django_db
+def test_media_served_when_debug_false(client, settings):
+    settings.DEBUG = False
+    media_dir = settings.MEDIA_ROOT / "test_avatars"
+    media_dir.mkdir(parents=True, exist_ok=True)
+    sample_file = media_dir / "sample.txt"
+    sample_file.write_text("ok-media")
+    try:
+        resp = client.get("/media/test_avatars/sample.txt")
+        assert resp.status_code == 200
+        assert b"".join(resp.streaming_content).decode() == "ok-media"
+    finally:
+        sample_file.unlink(missing_ok=True)
+        media_dir.rmdir()
+
+
