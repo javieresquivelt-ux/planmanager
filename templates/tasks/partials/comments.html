@@ -1,0 +1,23 @@
+{% load i18n %}
+<div id="comments" hx-target="#comments" hx-swap="outerHTML">
+    <h2>{% trans "Comentarios" %}</h2>
+    <ul>
+        {% for comment in comments %}
+            <li>
+                <strong>{{ comment.author.email }}</strong>:
+                {{ comment.body }}
+                <small>{{ comment.created_at }}</small>
+            </li>
+        {% empty %}
+            <li>{% trans "Sin comentarios todavía." %}</li>
+        {% endfor %}
+    </ul>
+    {% if can_comment %}
+        <form method="post" action="{% url 'tasks:comment' task.project_id task.pk %}"
+              hx-post="{% url 'tasks:comment' task.project_id task.pk %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">{% trans "Comentar" %}</button>
+        </form>
+    {% endif %}
+</div>

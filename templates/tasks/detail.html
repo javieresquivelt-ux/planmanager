@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ task.title }} · {{ site.site_name }}{% endblock %}
+
+{% block content %}
+<h1>{{ task.title }}</h1>
+<p>{{ task.description }}</p>
+<p>{% trans "Proyecto" %}: {{ task.project.name }}</p>
+<p>{% trans "Asignada a" %}: {% if task.assignee %}{{ task.assignee.email }}{% else %}—{% endif %}</p>
+<p>{% trans "Prioridad" %}: {{ task.get_priority_display }}</p>
+<p>{% trans "Fecha límite" %}: {% if task.due_date %}{{ task.due_date }}{% else %}—{% endif %}</p>
+
+{% include "tasks/partials/task_status.html" %}
+
+{% if can_edit %}
+    <p>
+        <a href="{% url 'tasks:update' task.project_id task.pk %}">{% trans "Editar" %}</a>
+        <a href="{% url 'tasks:delete' task.project_id task.pk %}">{% trans "Eliminar" %}</a>
+    </p>
+{% endif %}
+
+{% include "tasks/partials/comments.html" %}
+{% endblock %}

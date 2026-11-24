@@ -1,0 +1,14 @@
+{% load i18n %}
+<div id="task-status" hx-target="#task-status" hx-swap="outerHTML">
+    <p>{% trans "Estado" %}: <strong>{{ task.get_status_display }}</strong></p>
+    {% if can_edit %}
+        {% for value, label in task.Status.choices %}
+            <form method="post" action="{% url 'tasks:status' task.project_id task.pk %}" style="display:inline"
+                  hx-post="{% url 'tasks:status' task.project_id task.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="{{ value }}">
+                <button type="submit" {% if task.status == value %}disabled{% endif %}>{{ label }}</button>
+            </form>
+        {% endfor %}
+    {% endif %}
+</div>

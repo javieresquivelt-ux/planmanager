@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 
@@ -60,6 +61,11 @@ class Task(models.Model):
 
     def __str__(self) -> str:
         return self.title
+
+    def get_absolute_url(self) -> str:
+        return reverse(
+            "tasks:detail", kwargs={"project_pk": self.project_id, "pk": self.pk}
+        )
 
 
 class Comment(models.Model):

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<h1>{% if object %}{% trans "Editar proyecto" %}{% else %}{% trans "Nuevo proyecto" %}{% endif %}</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">{% trans "Guardar" %}</button>
+</form>
+{% endblock %}

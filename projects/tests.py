@@ -2,6 +2,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 from django.test import RequestFactory
+from django.urls import reverse
 
 from tasks.models import Task
 
@@ -58,7 +59,7 @@ def _membership_scenario():
     member = User.objects.create_user(email="member@example.com", password="pass12345")
     viewer = User.objects.create_user(email="viewer@example.com", password="pass12345")
     outsider = User.objects.create_user(email="outsider@example.com", password="pass12345")
-    project = Project.objects.create(name="P", owner=owner)
+    project = Project.objects.create(name="Proyecto Alpha", owner=owner)
     ProjectMembership.objects.create(project=project, user=owner, role="OWNER")
     ProjectMembership.objects.create(project=project, user=manager, role="MANAGER")
     ProjectMembership.objects.create(project=project, user=member, role="MEMBER")
@@ -124,3 +125,59 @@ def test_permission_matrix():
 
     assert permissions.can_edit_project("OWNER") is True
     assert permissions.can_edit_project("MANAGER") is False
+
+
+@pytest.mark.django_db
+def test_project_list_only_member_projects(client):
+    owner, manager, member, viewer, outsider, project = _membership_scenario()
+    client.force_login(owner)
+    resp = client.get(reverse("projects:list"))
+    assert resp.status_code == 200
+    assert project.name.encode() in resp.content
+
+    client.force_login(outsider)
+    resp = client.get(reverse("projects:list"))
+    assert project.name.encode() not in resp.content
+
+
+@pytest.mark.django_db
+def test_project_create_creates_owner_membership(client):
+    user = User.objects.create_user(email="new@example.com", password="pass12345")
+    client.force_login(user)
+    resp = client.post(
+        reverse("projects:create"), {"name": "Nuevo", "description": "d"}
+    )
+    assert resp.status_code == 302
+    project = Project.objects.get(name="Nuevo")
+    assert project.owner == user
+    assert ProjectMembership.get_role(user, project) == "OWNER"
+
+
+@pytest.mark.django_db
+def test_project_detail_outsider_forbidden(client):
+    owner, manager, member, viewer, outsider, project = _membership_scenario()
+    client.force_login(outsider)
+    resp = client.get(reverse("projects:detail", kwargs={"project_pk": project.pk}))
+    assert resp.status_code == 403
+
+
+@pytest.mark.django_db
+def test_member_add_owner_only(client):
+    owner, manager, member, viewer, outsider, project = _membership_scenario()
+
+    client.force_login(manager)
+    resp = client.post(
+        reverse("projects:member_add", kwargs={"project_pk": project.pk}),
+        {"email": "x@example.com", "role": "MEMBER"},
+    )
+    assert resp.status_code == 403
+
+    User.objects.create_user(email="added@example.com", password="pass12345")
+    client.force_login(owner)
+    resp = client.post(
+        reverse("projects:member_add", kwargs={"project_pk": project.pk}),
+        {"email": "added@example.com", "role": "MEMBER"},
+    )
+    assert resp.status_code == 302
+    added = User.objects.get(email="added@example.com")
+    assert ProjectMembership.get_role(added, project) == "MEMBER"

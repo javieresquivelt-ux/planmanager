@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Mis proyectos" %} · {{ site.site_name }}{% endblock %}
+
+{% block content %}
+<h1>{% trans "Mis proyectos" %}</h1>
+<p><a href="{% url 'projects:create' %}">{% trans "Nuevo proyecto" %}</a></p>
+<ul>
+    {% for project in projects %}
+        <li><a href="{{ project.get_absolute_url }}">{{ project.name }}</a></li>
+    {% empty %}
+        <li>{% trans "No tienes proyectos todavía." %}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

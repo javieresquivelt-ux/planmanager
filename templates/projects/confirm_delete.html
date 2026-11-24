@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<h1>{% trans "Eliminar proyecto" %}</h1>
+<p>{% trans "¿Seguro que quieres eliminar" %} "{{ object }}"?</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">{% trans "Sí, eliminar" %}</button>
+</form>
+{% endblock %}

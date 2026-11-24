@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ project.name }} — {% trans "Tareas" %} · {{ site.site_name }}{% endblock %}
+
+{% block content %}
+<h1>{{ project.name }} — {% trans "Tareas" %}</h1>
+<p><a href="{{ project.get_absolute_url }}">← {% trans "Volver al proyecto" %}</a></p>
+
+{% if user_role != "VIEWER" %}
+    <h2>{% trans "Nueva tarea" %}</h2>
+    <form method="post" action="{% url 'tasks:create' project.pk %}">
+        {% csrf_token %}
+        {{ task_form.as_p }}
+        <button type="submit">{% trans "Crear tarea" %}</button>
+    </form>
+{% endif %}
+
+<ul>
+    {% for task in tasks %}
+        <li>
+            <a href="{{ task.get_absolute_url }}">{{ task.title }}</a>
+            — {{ task.get_status_display }} / {{ task.get_priority_display }}
+        </li>
+    {% empty %}
+        <li>{% trans "No hay tareas." %}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

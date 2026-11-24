@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<h1>{{ project.name }}</h1>
+<p>{{ project.description }}</p>
+<p>{% trans "Propietario" %}: {{ project.owner.email }}</p>
+
+<p><a href="{% url 'tasks:list' project.pk %}">{% trans "Ver tareas" %}</a></p>
+
+{% if user_role == "OWNER" %}
+    <p>
+        <a href="{% url 'projects:update' project.pk %}">{% trans "Editar" %}</a>
+        <a href="{% url 'projects:delete' project.pk %}">{% trans "Eliminar" %}</a>
+    </p>
+{% endif %}
+
+<h2>{% trans "Miembros" %}</h2>
+<ul>
+    {% for m in memberships %}
+        <li>
+            {{ m.user.email }} — {{ m.get_role_display }}
+            {% if user_role == "OWNER" %}
+                <form method="post" action="{% url 'projects:member_role' project.pk m.pk %}" style="display:inline">
+                    {% csrf_token %}
+                    <select name="role" onchange="this.form.submit()">
+                        {% for value, label in role_choices %}
+                            <option value="{{ value }}" {% if m.role == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+                {% if m.role != "OWNER" %}
+                    <form method="post" action="{% url 'projects:member_remove' project.pk m.pk %}" style="display:inline">
+                        {% csrf_token %}
+                        <button type="submit">{% trans "Quitar" %}</button>
+                    </form>
+                {% endif %}
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
+
+{% if user_role == "OWNER" %}
+    <h3>{% trans "Añadir miembro" %}</h3>
+    <form method="post" action="{% url 'projects:member_add' project.pk %}">
+        {% csrf_token %}
+        {{ member_form.as_p }}
+        <button type="submit">{% trans "Añadir" %}</button>
+    </form>
+{% endif %}
+{% endblock %}

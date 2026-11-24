@@ -11,4 +11,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", core_views.home, name="home"),
     path("users/", include("users.urls")),
+    path("projects/", include("projects.urls")),
+    path("", include("tasks.urls")),
 ]
