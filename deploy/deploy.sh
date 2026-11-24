@@ -12,14 +12,14 @@
 #   sudo bash deploy/deploy.sh <github_url>
 #
 # Requisitos previos del host (deben estar YA instalados):
-#   python3.14, git, node/npm, docker + docker-compose-plugin.
-# El script solo instala gettext.
+#   git, node/npm, docker + docker-compose-plugin, y `uv`.
+# `uv` descarga Python 3.14 automáticamente. El script solo instala gettext.
 # =============================================================================
 set -euo pipefail
 
 REPO_URL="${1:-https://github.com/javieresquivelt-ux/planmanager.git}"
 APP_DIR="/opt/planmanager"
-PYTHON="python3.14"
+UV="$(command -v uv || echo /root/.local/bin/uv)"
 DOMAIN="cystec.cloud"
 
 echo "==> [1/8] Verificando paquetes base (aditivo)"
@@ -38,9 +38,9 @@ fi
 
 echo "==> [3/8] Creando entorno virtual e instalando dependencias"
 cd "$APP_DIR"
-"$PYTHON" -m venv .venv
-.venv/bin/pip install --upgrade pip
-.venv/bin/pip install -e .
+"$UV" python install 3.14
+"$UV" venv --python 3.14 .venv
+"$UV" pip install --python .venv/bin/python -e .
 
 echo "==> [4/8] Variables de entorno (.env)"
 if [ ! -f .env ]; then
