@@ -8,5 +8,5 @@ register = template.Library()
 
 
 @register.inclusion_tag("core/partials/avatar.html")
-def avatar(user: User, size: str = "h-6 w-6", text: str = "text-xs") -> dict[str, Any]:
+def avatar(user: User, size: str = "h-12 w-12", text: str = "text-sm") -> dict[str, Any]:
     return {"user": user, "size": size, "text": text}
