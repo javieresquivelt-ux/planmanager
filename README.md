@@ -281,13 +281,10 @@ npm run watch               # compila en modo watch
 
 ---
 
-## Gobernanza
+## Créditos y agradecimientos
 
-El desarrollo sigue la metodología **HARNESS** (`ANALIZAR → PLANIFICAR → APROBAR → EJECUTAR → REGISTRAR → APRENDER`) y el catálogo de skills **`ai-skills-core`**.
-
-Documentos de proyecto:
-
-- [`task.md`](task.md) — plan de trabajo y progreso.
-- [`spec.md`](spec.md) — especificación funcional y técnica.
-- [`memory.md`](memory.md) — decisiones técnicas y lecciones aprendidas.
-- [`agent.md`](agent.md) — reglas de ingeniería del agente.
+- **Creador:** Javier Esquivel
+- **Proyecto:** Gestor de proyectos (educativo) para el máster de desarrollo fullstack de Conquer Blocks.
+- **Tecnologías:** Python/Django, DTL + HTMX 2.x + Alpine.js 3.x, Tailwind CSS 3.4, PostgreSQL 16 (Docker Compose).
+- **Agradecimientos:** a Conquer Blocks y a todo el equipo docente por la formación y el acompañamiento en el proceso de aprendizaje.
+- **Nota:** aplicación con fines exclusivamente académicos.
