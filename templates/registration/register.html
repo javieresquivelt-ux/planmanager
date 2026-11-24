@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Registrarse" %} · {{ site.site_name }}{% endblock %}
+
+{% block content %}
+<h1>{% trans "Registrarse" %}</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">{% trans "Crear cuenta" %}</button>
+</form>
+<p>{% trans "¿Ya tienes cuenta?" %} <a href="{% url 'users:login' %}">{% trans "Inicia sesión" %}</a></p>
+{% endblock %}

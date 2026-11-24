@@ -76,6 +76,11 @@ WSGI_APPLICATION = "planmanager.wsgi.application"
 # Custom user model (definido ANTES de la primera migración)
 AUTH_USER_MODEL = "users.User"
 
+# Autenticación
+LOGIN_URL = "users:login"
+LOGIN_REDIRECT_URL = "users:profile"
+LOGOUT_REDIRECT_URL = "users:login"
+
 
 # Database
 # https://docs.djangoproject.com/en/stable/ref/settings/#databases

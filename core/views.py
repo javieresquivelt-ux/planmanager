@@ -1,2 +1,7 @@
+from django.shortcuts import redirect
 
-# Create your views here.
+
+def home(request):
+    if request.user.is_authenticated:
+        return redirect("users:profile")
+    return redirect("users:login")

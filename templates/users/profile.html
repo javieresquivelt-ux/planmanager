@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Perfil" %} · {{ site.site_name }}{% endblock %}
+
+{% block content %}
+<h1>{% trans "Perfil" %}</h1>
+<p>{% trans "Email" %}: {{ user.email }}</p>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">{% trans "Guardar" %}</button>
+</form>
+{% endblock %}

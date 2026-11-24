@@ -60,5 +60,6 @@ django_settings_module = "planmanager.settings.local"
 # ---------------------------------------------------------------------------
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "planmanager.settings.local"
-testpaths = ["tests"]
+testpaths = ["users", "core", "projects", "tasks"]
+python_files = ["tests.py", "test_*.py"]
 addopts = "-q"
