@@ -14,8 +14,9 @@ def test_task_comment_attachment_creation():
     user = User.objects.create_user(email="u@example.com", password="pass12345")
     project = Project.objects.create(name="P1", owner=user)
     task = Task.objects.create(
-        project=project, title="T1", created_by=user, assignee=user
+        project=project, title="T1", created_by=user
     )
+    task.assignees.add(user)
     comment = Comment.objects.create(task=task, author=user, body="hola")
     attachment = Attachment.objects.create(
         task=task, uploaded_by=user, file="attachments/x.txt"
@@ -26,6 +27,32 @@ def test_task_comment_attachment_creation():
     assert task.priority == Task.Priority.MEDIUM
     assert list(task.comments.all()) == [comment]
     assert list(task.attachments.all()) == [attachment]
+
+
+@pytest.mark.django_db
+def test_task_multiple_assignees(client):
+    owner = User.objects.create_user(email="owner@example.com", password="pass12345")
+    member1 = User.objects.create_user(email="m1@example.com", password="pass12345")
+    member2 = User.objects.create_user(email="m2@example.com", password="pass12345")
+    project = Project.objects.create(name="P", owner=owner)
+    ProjectMembership.objects.create(project=project, user=owner, role="OWNER")
+    ProjectMembership.objects.create(project=project, user=member1, role="MEMBER")
+    ProjectMembership.objects.create(project=project, user=member2, role="MEMBER")
+
+    client.force_login(owner)
+    resp = client.post(
+        reverse("tasks:create", kwargs={"project_pk": project.pk}),
+        {
+            "title": "Tarea multi",
+            "status": "TODO",
+            "priority": "MEDIUM",
+            "due_date": "",
+            "assignees": [member1.id, member2.id],
+        },
+    )
+    assert resp.status_code == 302
+    task = Task.objects.get(title="Tarea multi")
+    assert set(task.assignees.all()) == {member1, member2}
 
 
 def _task_scenario():

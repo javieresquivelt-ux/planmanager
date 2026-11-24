@@ -76,9 +76,9 @@ class TaskDetailView(ProjectMemberRequiredMixin, DetailView[Task]):
     context_object_name = "task"
 
     def get_queryset(self) -> QuerySet[Task]:
-        return Task.objects.filter(project=self.get_project()).select_related(
-            "assignee", "project"
-        )
+        return Task.objects.filter(project=self.get_project()).prefetch_related(
+            "assignees"
+        ).select_related("project")
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         ctx = super().get_context_data(**kwargs)

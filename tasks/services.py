@@ -7,13 +7,20 @@ from .models import Comment, Task
 
 
 def create_task(*, project: Project, created_by: User, **fields: Any) -> Task:
-    return Task.objects.create(project=project, created_by=created_by, **fields)
+    assignees = fields.pop("assignees", None)
+    task = Task.objects.create(project=project, created_by=created_by, **fields)
+    if assignees is not None:
+        task.assignees.set(assignees)
+    return task
 
 
 def update_task(task: Task, **fields: Any) -> Task:
+    assignees = fields.pop("assignees", None)
     for field, value in fields.items():
         setattr(task, field, value)
     task.save()
+    if assignees is not None:
+        task.assignees.set(assignees)
     return task
 
 

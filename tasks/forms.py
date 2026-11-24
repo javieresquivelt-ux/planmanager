@@ -10,8 +10,11 @@ from .models import Comment, Task
 class TaskForm(forms.ModelForm[Task]):
     class Meta:
         model = Task
-        fields = ["title", "description", "assignee", "status", "priority", "due_date"]
-        widgets = {"due_date": forms.DateInput(attrs={"type": "date"})}
+        fields = ["title", "description", "assignees", "status", "priority", "due_date"]
+        widgets = {
+            "due_date": forms.DateInput(attrs={"type": "date"}),
+            "assignees": forms.CheckboxSelectMultiple,
+        }
 
     def __init__(
         self,
@@ -22,11 +25,11 @@ class TaskForm(forms.ModelForm[Task]):
     ) -> None:
         super().__init__(*args, **kwargs)
         if project is not None:
-            assignee = self.fields.get("assignee")
-            if isinstance(assignee, forms.ModelChoiceField):
-                assignee.queryset = project.members.all()
+            assignees = self.fields.get("assignees")
+            if isinstance(assignees, forms.ModelMultipleChoiceField):
+                assignees.queryset = project.members.all()
         if not can_assign:
-            self.fields.pop("assignee", None)
+            self.fields.pop("assignees", None)
 
 
 class CommentForm(forms.ModelForm[Comment]):

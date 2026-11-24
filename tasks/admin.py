@@ -5,8 +5,19 @@ from .models import Attachment, Comment, Task
 
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin[Task]):
-    list_display = ("title", "project", "assignee", "status", "priority", "due_date")
+    list_display = (
+        "title",
+        "project",
+        "assignees_display",
+        "status",
+        "priority",
+        "due_date",
+    )
     list_filter = ("status", "priority")
+
+    @admin.display(description="Asignados")
+    def assignees_display(self, obj: Task) -> str:
+        return ", ".join(u.email for u in obj.assignees.all())
 
 
 @admin.register(Comment)

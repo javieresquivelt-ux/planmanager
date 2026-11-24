@@ -24,13 +24,19 @@
         <span class="{{ task.priority|priority_badge }}">{{ task.get_priority_display }}</span>
     </div>
     {% if task.description %}<p>{{ task.description }}</p>{% endif %}
-    <p class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-        {% trans "Asignada a" %}:
-        {% if task.assignee %}
-            {% avatar task.assignee size="h-8 w-8" text="text-xs" %}
-            {{ task.assignee.email }}
+    <div class="text-sm text-gray-600 dark:text-gray-300">
+        <span>{% trans "Asignados" %}:</span>
+        {% if task.assignees.all %}
+            <div class="mt-1 flex flex-wrap gap-2">
+                {% for a in task.assignees.all %}
+                    <span class="flex items-center gap-1">
+                        {% avatar a size="h-8 w-8" text="text-xs" %}
+                        {{ a.email }}
+                    </span>
+                {% endfor %}
+            </div>
         {% else %}—{% endif %}
-    </p>
+    </div>
     <p class="text-sm text-gray-600 dark:text-gray-300">{% trans "Fecha límite" %}: {% if task.due_date %}{{ task.due_date }}{% else %}—{% endif %}</p>
 </div>
 

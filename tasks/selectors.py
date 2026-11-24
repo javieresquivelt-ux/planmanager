@@ -8,7 +8,8 @@ from .models import Comment, Task
 def tasks_for_project(project: Project) -> QuerySet[Task]:
     return (
         Task.objects.filter(project=project)
-        .select_related("assignee", "created_by")
+        .prefetch_related("assignees")
+        .select_related("created_by")
         .order_by("-created_at")
     )
 

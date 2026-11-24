@@ -22,13 +22,11 @@ class Task(models.Model):
     )
     title = models.CharField(_("título"), max_length=200)
     description = models.TextField(_("descripción"), blank=True)
-    assignee = models.ForeignKey(
+    assignees = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
         blank=True,
         related_name="assigned_tasks",
-        verbose_name=_("asignado a"),
+        verbose_name=_("asignados"),
     )
     status = models.CharField(
         _("estado"),

@@ -253,3 +253,9 @@ msgstr "Urgent"
 
 msgid "foto de perfil"
 msgstr "profile photo"
+
+msgid "asignados"
+msgstr "assignees"
+
+msgid "Asignados"
+msgstr "Assignees"
