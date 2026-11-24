@@ -55,10 +55,11 @@ def dashboard_metrics(user: User) -> dict[str, Any]:
     done_tasks = tasks_by_status.get(Task.Status.DONE.value, 0)
 
     status_rows = [
-        (label, tasks_by_status.get(value, 0)) for value, label in Task.Status.choices
+        (value, label, tasks_by_status.get(value, 0))
+        for value, label in Task.Status.choices
     ]
     priority_rows = [
-        (label, tasks_by_priority.get(value, 0))
+        (value, label, tasks_by_priority.get(value, 0))
         for value, label in Task.Priority.choices
     ]
 

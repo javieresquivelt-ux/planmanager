@@ -3,10 +3,13 @@
     <h2 class="mb-4 text-lg font-semibold">{% trans "Comentarios" %}</h2>
     <ul class="mb-4 space-y-3">
         {% for comment in comments %}
-            <li class="rounded-lg border border-gray-200 p-3 dark:border-white/10">
-                <p class="text-sm font-medium">{{ comment.author.email }}</p>
-                <p class="text-sm">{{ comment.body }}</p>
-                <p class="text-xs text-gray-400">{{ comment.created_at }}</p>
+            <li class="flex gap-3 rounded-lg border border-gray-200 p-3 dark:border-white/10">
+                <span class="avatar mt-0.5 shrink-0">{{ comment.author.email|slice:":1"|upper }}</span>
+                <div class="min-w-0">
+                    <p class="text-sm font-medium">{{ comment.author.email }}</p>
+                    <p class="text-sm">{{ comment.body }}</p>
+                    <p class="text-xs text-gray-400">{{ comment.created_at }}</p>
+                </div>
             </li>
         {% empty %}
             <li class="text-sm text-gray-500 dark:text-gray-400">{% trans "Sin comentarios todavía." %}</li>

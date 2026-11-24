@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n badges %}
 
 {% block title %}{{ project.name }} · {{ site.site_name }}{% endblock %}
 
@@ -10,7 +10,7 @@
         <p class="text-sm text-gray-500 dark:text-gray-400">{% trans "Propietario" %}: {{ project.owner.email }}</p>
     </div>
     <div class="flex gap-2">
-        <a href="{% url 'tasks:list' project.pk %}" class="btn-primary">{% trans "Ver tareas" %}</a>
+        <a href="{% url 'tasks:list' project.pk %}" class="btn-brand">{% trans "Ver tareas" %}</a>
         {% if user_role == "OWNER" %}
             <a href="{% url 'projects:update' project.pk %}" class="btn-secondary">{% trans "Editar" %}</a>
             <a href="{% url 'projects:delete' project.pk %}" class="btn-danger">{% trans "Eliminar" %}</a>
@@ -27,9 +27,12 @@
     <ul class="divide-y divide-gray-200 dark:divide-white/10">
         {% for m in memberships %}
             <li class="flex items-center justify-between gap-3 py-3">
-                <div>
-                    <p class="font-medium">{{ m.user.email }}</p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ m.get_role_display }}</p>
+                <div class="flex items-center gap-3">
+                    <span class="avatar">{{ m.user.email|slice:":1"|upper }}</span>
+                    <div>
+                        <p class="font-medium">{{ m.user.email }}</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">{{ m.get_role_display }}</p>
+                    </div>
                 </div>
                 {% if user_role == "OWNER" %}
                     <div class="flex items-center gap-2">

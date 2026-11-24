@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n badges %}
 
 {% block title %}{{ project.name }} — {% trans "Tareas" %} · {{ site.site_name }}{% endblock %}
 
@@ -23,9 +23,17 @@
 <div class="space-y-2">
     {% for task in tasks %}
         <a href="{{ task.get_absolute_url }}"
-           class="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3 transition-shadow hover:shadow-md dark:border-white/10 dark:bg-gray-900">
-            <span class="font-medium">{{ task.title }}</span>
-            <span class="text-sm text-gray-500 dark:text-gray-400">{{ task.get_status_display }} · {{ task.get_priority_display }}</span>
+           class="flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 transition-shadow hover:shadow-md dark:border-white/10 dark:bg-gray-900">
+            <div class="flex min-w-0 items-center gap-3">
+                {% if task.assignee %}
+                    <span class="avatar shrink-0">{{ task.assignee.email|slice:":1"|upper }}</span>
+                {% endif %}
+                <span class="truncate font-medium">{{ task.title }}</span>
+            </div>
+            <span class="flex shrink-0 items-center gap-2">
+                <span class="{{ task.status|status_badge }}">{{ task.get_status_display }}</span>
+                <span class="{{ task.priority|priority_badge }}">{{ task.get_priority_display }}</span>
+            </span>
         </a>
     {% empty %}
         <div class="rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-500 dark:border-white/10 dark:bg-gray-900 dark:text-gray-400">

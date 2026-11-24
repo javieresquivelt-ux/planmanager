@@ -20,8 +20,9 @@
 
     <nav class="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur dark:border-white/10 dark:bg-gray-900/80">
         <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-            <a href="{% url 'home' %}" class="text-lg font-semibold text-brand-600 dark:text-brand-400">
-                {{ site.site_name }}
+            <a href="{% url 'home' %}" class="flex items-center gap-2">
+                <span class="brand-mark">PM</span>
+                <span class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ site.site_name }}</span>
             </a>
 
             <div class="flex items-center gap-2">
@@ -43,8 +44,10 @@
 
                 {% if user.is_authenticated %}
                     <div class="hidden items-center gap-4 md:flex">
-                        <a href="{% url 'dashboard' %}" class="text-sm hover:text-brand-600">{% trans "Panel" %}</a>
-                        <a href="{% url 'projects:list' %}" class="text-sm hover:text-brand-600">{% trans "Proyectos" %}</a>
+                        <a href="{% url 'dashboard' %}"
+                           class="text-sm {% if request.resolver_match.url_name == 'dashboard' %}font-semibold text-brand-600{% else %}hover:text-brand-600{% endif %}">{% trans "Panel" %}</a>
+                        <a href="{% url 'projects:list' %}"
+                           class="text-sm {% if request.resolver_match.namespace == 'projects' or request.resolver_match.namespace == 'tasks' %}font-semibold text-brand-600{% else %}hover:text-brand-600{% endif %}">{% trans "Proyectos" %}</a>
                         <a href="{% url 'users:profile' %}" class="text-sm hover:text-brand-600">{% trans "Perfil" %}</a>
                         <form method="post" action="{% url 'users:logout' %}">
                             {% csrf_token %}

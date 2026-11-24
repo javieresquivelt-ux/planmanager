@@ -6,8 +6,11 @@
 {% block content %}
 <div class="mx-auto max-w-md">
     <div class="card">
-        <h1 class="mb-6 text-2xl font-semibold">{% trans "Perfil" %}</h1>
-        <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">{% trans "Email" %}: {{ user.email }}</p>
+        <div class="mb-6 flex flex-col items-center gap-3">
+            <span class="avatar h-12 w-12 text-lg">{{ user.email|slice:":1"|upper }}</span>
+            <h1 class="text-2xl font-semibold">{% trans "Perfil" %}</h1>
+        </div>
+        <p class="mb-4 text-center text-sm text-gray-500 dark:text-gray-400">{% trans "Email" %}: {{ user.email }}</p>
         <form method="post" class="space-y-4">
             {% csrf_token %}
             {{ form.as_p }}

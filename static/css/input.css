@@ -24,6 +24,11 @@
   }
 
   .btn-primary {
+    @apply inline-flex items-center justify-center rounded-lg bg-accent-500 px-4 py-2
+      text-sm font-medium text-white transition-colors hover:bg-accent-600;
+  }
+
+  .btn-brand {
     @apply inline-flex items-center justify-center rounded-lg bg-brand-600 px-4 py-2
       text-sm font-medium text-white transition-colors hover:bg-brand-700;
   }
@@ -37,5 +42,47 @@
   .btn-danger {
     @apply inline-flex items-center justify-center rounded-lg bg-red-600 px-4 py-2
       text-sm font-medium text-white transition-colors hover:bg-red-700;
+  }
+
+  .brand-mark {
+    @apply flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br
+      from-brand-600 to-accent-500 text-sm font-bold text-white;
+  }
+
+  .avatar {
+    @apply inline-flex h-8 w-8 items-center justify-center rounded-full
+      bg-brand-600 text-xs font-semibold text-white;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  .badge-slate {
+    @apply bg-slate-100 text-slate-700 dark:bg-slate-500/20 dark:text-slate-300;
+  }
+
+  .badge-blue {
+    @apply bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300;
+  }
+
+  .badge-amber {
+    @apply bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300;
+  }
+
+  .badge-green {
+    @apply bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300;
+  }
+
+  .badge-red {
+    @apply bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300;
+  }
+
+  .progress-track {
+    @apply h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-white/10;
+  }
+
+  .progress-fill {
+    @apply h-full rounded-full bg-green-500;
   }
 }
