@@ -2,7 +2,7 @@
 Settings de producción.
 
 Usar con: DJANGO_SETTINGS_MODULE=planmanager.settings.production
-Completar endurecimiento (WhiteNoise, HSTS, etc.) en la fase de despliegue.
+Despliegue: Gunicorn + nginx (reverse proxy) servido por HTTP en el puerto 8010.
 """
 
 from .base import *  # noqa: F403
@@ -12,8 +12,19 @@ DEBUG = False
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+# WhiteNoise sirve los estáticos en producción (tras `collectstatic`).
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
-SESSION_COOKIE_SECURE = True
+# Cookies: False porque el sitio se sirve por HTTP (sin TLS) en el puerto 8010.
+# Si se monta HTTPS (nginx + Let's Encrypt), restaurar a True y añadir
+# SECURE_PROXY_SSL_HEADER y CSRF_TRUSTED_ORIGINS.
+SESSION_COOKIE_SECURE = False
 
-CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = False
