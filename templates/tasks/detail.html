@@ -27,7 +27,7 @@
     <p class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
         {% trans "Asignada a" %}:
         {% if task.assignee %}
-            {% avatar task.assignee size="h-6 w-6" text="text-[10px]" %}
+            {% avatar task.assignee size="h-4 w-4" text="text-[9px]" %}
             {{ task.assignee.email }}
         {% else %}—{% endif %}
     </p>
