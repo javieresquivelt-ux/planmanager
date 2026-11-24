@@ -3,6 +3,7 @@ from typing import Any
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 
 class UserManager(BaseUserManager["User"]):
@@ -38,6 +39,7 @@ class User(AbstractUser):
     username = None  # type: ignore[assignment]
     email = models.EmailField(unique=True)
     is_email_verified = models.BooleanField(default=False)
+    profile_image = models.ImageField(_("foto de perfil"), upload_to="avatars/", blank=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: list[str] = []  # type: ignore[misc]

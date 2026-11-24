@@ -6,7 +6,7 @@ Despliegue: Gunicorn + nginx (reverse proxy) servido por HTTP en el puerto 8010.
 """
 
 from .base import *  # noqa: F403
-from .base import env
+from .base import BASE_DIR, env
 
 DEBUG = False
 
@@ -21,6 +21,9 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
+
+# Media (adjuntos, avatares) servido por WhiteNoise bajo /media/ (sin nginx).
+WHITENOISE_ROOT = BASE_DIR / "media"
 
 # Cookies: False porque el sitio se sirve por HTTP (sin TLS) en el puerto 8010.
 # Si se monta HTTPS (nginx + Let's Encrypt), restaurar a True y añadir

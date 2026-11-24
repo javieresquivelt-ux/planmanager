@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n badges %}
+{% load i18n badges avatars %}
 
 {% block title %}{{ project.name }} · {{ site.site_name }}{% endblock %}
 
@@ -28,7 +28,7 @@
         {% for m in memberships %}
             <li class="flex items-center justify-between gap-3 py-3">
                 <div class="flex items-center gap-3">
-                    <span class="avatar">{{ m.user.email|slice:":1"|upper }}</span>
+                    {% avatar m.user %}
                     <div>
                         <p class="font-medium">{{ m.user.email }}</p>
                         <p class="text-sm text-gray-500 dark:text-gray-400">{{ m.get_role_display }}</p>

@@ -250,3 +250,6 @@ msgstr "High"
 
 msgid "Urgente"
 msgstr "Urgent"
+
+msgid "foto de perfil"
+msgstr "profile photo"

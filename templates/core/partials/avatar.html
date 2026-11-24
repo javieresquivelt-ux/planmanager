@@ -1,0 +1,5 @@
+{% if user.profile_image %}
+    <img src="{{ user.profile_image.url }}" alt="{{ user.email }}" class="inline-block shrink-0 rounded-full object-cover {{ size }}">
+{% else %}
+    <span class="avatar shrink-0 {{ size }} {{ text }}">{{ user.email|slice:":1"|upper }}</span>
+{% endif %}

@@ -8,7 +8,7 @@ Group=www-data
 WorkingDirectory=/opt/planmanager
 EnvironmentFile=/opt/planmanager/.env
 ExecStart=/opt/planmanager/.venv/bin/gunicorn planmanager.wsgi:application \
-    --workers 3 --bind 127.0.0.1:8001 --timeout 120 \
+    --workers 3 --bind 0.0.0.0:8010 --timeout 120 \
     --access-logfile - --error-logfile -
 Restart=always
 RestartSec=3

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n badges %}
+{% load i18n badges avatars %}
 
 {% block title %}{{ task.title }} · {{ site.site_name }}{% endblock %}
 
@@ -27,7 +27,7 @@
     <p class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
         {% trans "Asignada a" %}:
         {% if task.assignee %}
-            <span class="avatar h-6 w-6 text-[10px]">{{ task.assignee.email|slice:":1"|upper }}</span>
+            {% avatar task.assignee size="h-6 w-6" text="text-[10px]" %}
             {{ task.assignee.email }}
         {% else %}—{% endif %}
     </p>

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n avatars %}
 
 {% block title %}{% trans "Perfil" %} · {{ site.site_name }}{% endblock %}
 
@@ -7,11 +7,11 @@
 <div class="mx-auto max-w-md">
     <div class="card">
         <div class="mb-6 flex flex-col items-center gap-3">
-            <span class="avatar h-12 w-12 text-lg">{{ user.email|slice:":1"|upper }}</span>
+            {% avatar user size="h-16 w-16" text="text-2xl" %}
             <h1 class="text-2xl font-semibold">{% trans "Perfil" %}</h1>
         </div>
         <p class="mb-4 text-center text-sm text-gray-500 dark:text-gray-400">{% trans "Email" %}: {{ user.email }}</p>
-        <form method="post" class="space-y-4">
+        <form method="post" enctype="multipart/form-data" class="space-y-4">
             {% csrf_token %}
             {{ form.as_p }}
             <button type="submit" class="btn-primary w-full">{% trans "Guardar" %}</button>

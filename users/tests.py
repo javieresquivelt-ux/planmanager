@@ -1,6 +1,11 @@
+from io import BytesIO
+
 import pytest
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import override_settings
 from django.urls import reverse
+from PIL import Image
 
 User = get_user_model()
 
@@ -57,3 +62,32 @@ def test_language_switch_to_english(client):
     resp = client.get(reverse("users:login"))
     assert b"Log in" in resp.content
     assert b"Iniciar sesi" not in resp.content
+
+
+@pytest.fixture
+def image_file():
+    buf = BytesIO()
+    Image.new("RGB", (8, 8), color=(80, 90, 200)).save(buf, format="PNG")
+    return SimpleUploadedFile(
+        "avatar.png", buf.getvalue(), content_type="image/png"
+    )
+
+
+@pytest.mark.django_db
+def test_profile_image_upload(client, image_file, tmp_path):
+    user = User.objects.create_user(email="img@example.com", password="pass12345")
+    client.force_login(user)
+    with override_settings(MEDIA_ROOT=str(tmp_path)):
+        resp = client.post(
+            reverse("users:profile"),
+            {
+                "first_name": "Ana",
+                "last_name": "Gómez",
+                "email": user.email,
+                "profile_image": image_file,
+            },
+        )
+    assert resp.status_code == 302
+    user.refresh_from_db()
+    assert bool(user.profile_image)
+    assert user.profile_image.name.startswith("avatars/")

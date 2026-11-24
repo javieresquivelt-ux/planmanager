@@ -1,10 +1,10 @@
-{% load i18n %}
+{% load i18n avatars %}
 <div id="comments" hx-target="#comments" hx-swap="outerHTML" class="card">
     <h2 class="mb-4 text-lg font-semibold">{% trans "Comentarios" %}</h2>
     <ul class="mb-4 space-y-3">
         {% for comment in comments %}
             <li class="flex gap-3 rounded-lg border border-gray-200 p-3 dark:border-white/10">
-                <span class="avatar mt-0.5 shrink-0">{{ comment.author.email|slice:":1"|upper }}</span>
+                {% avatar comment.author %}
                 <div class="min-w-0">
                     <p class="text-sm font-medium">{{ comment.author.email }}</p>
                     <p class="text-sm">{{ comment.body }}</p>

@@ -23,4 +23,4 @@ class UserLoginForm(AuthenticationForm):
 class UserProfileForm(forms.ModelForm[User]):
     class Meta:
         model = User
-        fields = ("first_name", "last_name", "email")
+        fields = ("first_name", "last_name", "email", "profile_image")
