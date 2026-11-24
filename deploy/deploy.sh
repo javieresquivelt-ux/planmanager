@@ -18,6 +18,10 @@ APP_DIR="/opt/planmanager"
 UV="$(command -v uv || echo /root/.local/bin/uv)"
 DOMAIN="cystec.cloud"
 
+# Los management commands (collectstatic/migrate) deben usar settings de producción,
+# para que collectstatic genere el manifest de WhiteNoise (CompressedManifestStaticFilesStorage).
+export DJANGO_SETTINGS_MODULE=planmanager.settings.production
+
 echo "==> [1/8] Paquetes base (node/npm para Tailwind + gettext)"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -y
@@ -48,7 +52,7 @@ fi
 echo "==> [5/8] Frontend (Tailwind) + estáticos"
 npm ci
 npm run build
-.venv/bin/python manage.py collectstatic --noinput
+.venv/bin/python manage.py collectstatic --noinput --clear
 
 echo "==> [6/8] Base de datos (PostgreSQL vía Docker Compose)"
 docker compose up -d db
