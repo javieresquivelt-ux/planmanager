@@ -11,7 +11,9 @@
 # Uso (con shell completo en el VPS):
 #   sudo bash deploy/deploy.sh <github_url>
 #
-# Requisitos previos del host: python3.14, git, node/npm, docker + compose, gettext.
+# Requisitos previos del host (deben estar YA instalados):
+#   python3.14, git, node/npm, docker + docker-compose-plugin.
+# El script solo instala gettext.
 # =============================================================================
 set -euo pipefail
 
@@ -20,12 +22,12 @@ APP_DIR="/opt/planmanager"
 PYTHON="python3.14"
 DOMAIN="cystec.cloud"
 
-echo "==> [1/8] Instalando paquetes base (aditivo)"
+echo "==> [1/8] Verificando paquetes base (aditivo)"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -y
-apt-get install -y --no-install-recommends \
-    git nodejs npm docker.io docker-compose-plugin gettext \
-    "$PYTHON" "$PYTHON-venv" "$PYTHON-dev" build-essential libpq-dev
+# Python 3.14, git, node/npm y Docker YA están instalados en este VPS.
+# Solo se instala gettext (para `compilemessages` si hiciera falta).
+apt-get install -y --no-install-recommends gettext
 
 echo "==> [2/8] Clonando repositorio en $APP_DIR"
 if [ -d "$APP_DIR/.git" ]; then
