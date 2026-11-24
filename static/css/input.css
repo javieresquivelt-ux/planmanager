@@ -3,14 +3,6 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    color-scheme: light;
-  }
-
-  .dark {
-    color-scheme: dark;
-  }
-
   input[type="text"],
   input[type="email"],
   input[type="password"],
@@ -33,11 +25,6 @@
   select option {
     background-color: #ffffff;
     color: #111827;
-  }
-
-  .dark select option {
-    background-color: #1f2937 !important;
-    color: #f3f4f6 !important;
   }
 }
 
