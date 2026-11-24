@@ -31,8 +31,10 @@
                     <input type="hidden" name="next" value="{{ request.path }}">
                     <button type="submit" name="language"
                             value="{% if LANGUAGE_CODE == 'es' %}en{% else %}es{% endif %}"
-                            class="rounded-md border border-gray-300 px-2 py-1 text-xs font-medium transition-colors hover:bg-gray-100 dark:border-white/10 dark:hover:bg-white/5">
-                        ES/EN
+                            class="flex items-center gap-1 rounded-md border border-gray-300 px-2 py-1 text-xs font-medium transition-colors hover:bg-gray-100 dark:border-white/10 dark:hover:bg-white/5">
+                        <span class="{% if LANGUAGE_CODE == 'es' %}font-bold text-brand-600 dark:text-brand-400{% else %}text-gray-400 dark:text-gray-500{% endif %}">ES</span>
+                        <span class="text-gray-400 dark:text-gray-500">/</span>
+                        <span class="{% if LANGUAGE_CODE == 'en' %}font-bold text-brand-600 dark:text-brand-400{% else %}text-gray-400 dark:text-gray-500{% endif %}">EN</span>
                     </button>
                 </form>
 
