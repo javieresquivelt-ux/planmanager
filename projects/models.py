@@ -12,6 +12,12 @@ class Project(models.Model):
         related_name="owned_projects",
         verbose_name=_("propietario"),
     )
+    members = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        through="ProjectMembership",
+        related_name="projects",
+        blank=True,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

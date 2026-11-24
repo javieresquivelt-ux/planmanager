@@ -32,3 +32,12 @@ def test_membership_unique_together():
     ProjectMembership.objects.create(project=project, user=user, role="MEMBER")
     with pytest.raises(IntegrityError):
         ProjectMembership.objects.create(project=project, user=user, role="VIEWER")
+
+
+@pytest.mark.django_db
+def test_members_m2m_through():
+    user = User.objects.create_user(email="u@example.com", password="pass12345")
+    project = Project.objects.create(name="P1", owner=user)
+    ProjectMembership.objects.create(project=project, user=user, role="MEMBER")
+    assert list(project.members.all()) == [user]
+    assert list(user.projects.all()) == [project]
