@@ -52,8 +52,14 @@ npm run build
 
 echo "==> [6/8] Base de datos (PostgreSQL vía Docker Compose)"
 docker compose up -d db
+echo "  esperando a que PostgreSQL esté listo..."
+for i in $(seq 1 30); do
+    if docker compose exec -T db pg_isready -U planmanager_user >/dev/null 2>&1; then
+        break
+    fi
+    sleep 2
+done
 .venv/bin/python manage.py migrate
-.venv/bin/python manage.py createsuperuser || true
 
 echo "==> [7/8] Servicio systemd (Gunicorn directo en :8010)"
 install -m 644 deploy/planmanager.service /etc/systemd/system/planmanager.service
@@ -67,3 +73,6 @@ echo ""
 echo "Despliegue completado. Acceso: http://$DOMAIN:8010/"
 echo "Verificar: curl -I http://localhost:8010/"
 echo "DNS (Hostinger): registro A @ -> IP pública del VPS (TTL 300)."
+echo ""
+echo "Para crear el superusuario, ejecuta:"
+echo "  cd $APP_DIR && .venv/bin/python manage.py createsuperuser"
