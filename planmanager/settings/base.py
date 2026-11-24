@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     # Apps de negocio
     "users",
     "core",
+    "projects",
+    "tasks",
 ]
 
 MIDDLEWARE = [
