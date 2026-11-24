@@ -1,23 +1,23 @@
 {% load i18n %}
-<div id="comments" hx-target="#comments" hx-swap="outerHTML">
-    <h2>{% trans "Comentarios" %}</h2>
-    <ul>
+<div id="comments" hx-target="#comments" hx-swap="outerHTML" class="card">
+    <h2 class="mb-4 text-lg font-semibold">{% trans "Comentarios" %}</h2>
+    <ul class="mb-4 space-y-3">
         {% for comment in comments %}
-            <li>
-                <strong>{{ comment.author.email }}</strong>:
-                {{ comment.body }}
-                <small>{{ comment.created_at }}</small>
+            <li class="rounded-lg border border-gray-200 p-3 dark:border-white/10">
+                <p class="text-sm font-medium">{{ comment.author.email }}</p>
+                <p class="text-sm">{{ comment.body }}</p>
+                <p class="text-xs text-gray-400">{{ comment.created_at }}</p>
             </li>
         {% empty %}
-            <li>{% trans "Sin comentarios todavía." %}</li>
+            <li class="text-sm text-gray-500 dark:text-gray-400">{% trans "Sin comentarios todavía." %}</li>
         {% endfor %}
     </ul>
     {% if can_comment %}
         <form method="post" action="{% url 'tasks:comment' task.project_id task.pk %}"
-              hx-post="{% url 'tasks:comment' task.project_id task.pk %}">
+              hx-post="{% url 'tasks:comment' task.project_id task.pk %}" class="space-y-3">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit">{% trans "Comentar" %}</button>
+            <button type="submit" class="btn-primary">{% trans "Comentar" %}</button>
         </form>
     {% endif %}
 </div>

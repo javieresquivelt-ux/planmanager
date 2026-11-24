@@ -4,11 +4,15 @@
 {% block title %}{% trans "Perfil" %} · {{ site.site_name }}{% endblock %}
 
 {% block content %}
-<h1>{% trans "Perfil" %}</h1>
-<p>{% trans "Email" %}: {{ user.email }}</p>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">{% trans "Guardar" %}</button>
-</form>
+<div class="mx-auto max-w-md">
+    <div class="card">
+        <h1 class="mb-6 text-2xl font-semibold">{% trans "Perfil" %}</h1>
+        <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">{% trans "Email" %}: {{ user.email }}</p>
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn-primary w-full">{% trans "Guardar" %}</button>
+        </form>
+    </div>
+</div>
 {% endblock %}

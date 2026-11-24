@@ -1,51 +1,65 @@
 {% extends "base.html" %}
 {% load i18n %}
 
+{% block title %}{{ project.name }} · {{ site.site_name }}{% endblock %}
+
 {% block content %}
-<h1>{{ project.name }}</h1>
-<p>{{ project.description }}</p>
-<p>{% trans "Propietario" %}: {{ project.owner.email }}</p>
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div>
+        <h1 class="text-2xl font-semibold">{{ project.name }}</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400">{% trans "Propietario" %}: {{ project.owner.email }}</p>
+    </div>
+    <div class="flex gap-2">
+        <a href="{% url 'tasks:list' project.pk %}" class="btn-primary">{% trans "Ver tareas" %}</a>
+        {% if user_role == "OWNER" %}
+            <a href="{% url 'projects:update' project.pk %}" class="btn-secondary">{% trans "Editar" %}</a>
+            <a href="{% url 'projects:delete' project.pk %}" class="btn-danger">{% trans "Eliminar" %}</a>
+        {% endif %}
+    </div>
+</div>
 
-<p><a href="{% url 'tasks:list' project.pk %}">{% trans "Ver tareas" %}</a></p>
-
-{% if user_role == "OWNER" %}
-    <p>
-        <a href="{% url 'projects:update' project.pk %}">{% trans "Editar" %}</a>
-        <a href="{% url 'projects:delete' project.pk %}">{% trans "Eliminar" %}</a>
-    </p>
+{% if project.description %}
+    <p class="mb-6 text-gray-600 dark:text-gray-300">{{ project.description }}</p>
 {% endif %}
 
-<h2>{% trans "Miembros" %}</h2>
-<ul>
-    {% for m in memberships %}
-        <li>
-            {{ m.user.email }} — {{ m.get_role_display }}
-            {% if user_role == "OWNER" %}
-                <form method="post" action="{% url 'projects:member_role' project.pk m.pk %}" style="display:inline">
-                    {% csrf_token %}
-                    <select name="role" onchange="this.form.submit()">
-                        {% for value, label in role_choices %}
-                            <option value="{{ value }}" {% if m.role == value %}selected{% endif %}>{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </form>
-                {% if m.role != "OWNER" %}
-                    <form method="post" action="{% url 'projects:member_remove' project.pk m.pk %}" style="display:inline">
-                        {% csrf_token %}
-                        <button type="submit">{% trans "Quitar" %}</button>
-                    </form>
+<div class="card">
+    <h2 class="mb-4 text-lg font-semibold">{% trans "Miembros" %}</h2>
+    <ul class="divide-y divide-gray-200 dark:divide-white/10">
+        {% for m in memberships %}
+            <li class="flex items-center justify-between gap-3 py-3">
+                <div>
+                    <p class="font-medium">{{ m.user.email }}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ m.get_role_display }}</p>
+                </div>
+                {% if user_role == "OWNER" %}
+                    <div class="flex items-center gap-2">
+                        <form method="post" action="{% url 'projects:member_role' project.pk m.pk %}">
+                            {% csrf_token %}
+                            <select name="role" onchange="this.form.submit()" class="!w-auto">
+                                {% for value, label in role_choices %}
+                                    <option value="{{ value }}" {% if m.role == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                        {% if m.role != "OWNER" %}
+                            <form method="post" action="{% url 'projects:member_remove' project.pk m.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-secondary">{% trans "Quitar" %}</button>
+                            </form>
+                        {% endif %}
+                    </div>
                 {% endif %}
-            {% endif %}
-        </li>
-    {% endfor %}
-</ul>
+            </li>
+        {% endfor %}
+    </ul>
 
-{% if user_role == "OWNER" %}
-    <h3>{% trans "Añadir miembro" %}</h3>
-    <form method="post" action="{% url 'projects:member_add' project.pk %}">
-        {% csrf_token %}
-        {{ member_form.as_p }}
-        <button type="submit">{% trans "Añadir" %}</button>
-    </form>
-{% endif %}
+    {% if user_role == "OWNER" %}
+        <h3 class="mb-3 mt-6 text-base font-semibold">{% trans "Añadir miembro" %}</h3>
+        <form method="post" action="{% url 'projects:member_add' project.pk %}" class="space-y-4">
+            {% csrf_token %}
+            {{ member_form.as_p }}
+            <button type="submit" class="btn-primary">{% trans "Añadir" %}</button>
+        </form>
+    {% endif %}
+</div>
 {% endblock %}

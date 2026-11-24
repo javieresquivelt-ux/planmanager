@@ -4,11 +4,18 @@
 {% block title %}{% trans "Registrarse" %} · {{ site.site_name }}{% endblock %}
 
 {% block content %}
-<h1>{% trans "Registrarse" %}</h1>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">{% trans "Crear cuenta" %}</button>
-</form>
-<p>{% trans "¿Ya tienes cuenta?" %} <a href="{% url 'users:login' %}">{% trans "Inicia sesión" %}</a></p>
+<div class="mx-auto max-w-md">
+    <div class="card">
+        <h1 class="mb-6 text-2xl font-semibold">{% trans "Registrarse" %}</h1>
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn-primary w-full">{% trans "Crear cuenta" %}</button>
+        </form>
+        <p class="mt-4 text-center text-sm">
+            {% trans "¿Ya tienes cuenta?" %}
+            <a href="{% url 'users:login' %}" class="text-brand-600 hover:underline">{% trans "Inicia sesión" %}</a>
+        </p>
+    </div>
+</div>
 {% endblock %}

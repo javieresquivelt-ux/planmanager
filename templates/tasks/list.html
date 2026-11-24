@@ -4,26 +4,33 @@
 {% block title %}{{ project.name }} — {% trans "Tareas" %} · {{ site.site_name }}{% endblock %}
 
 {% block content %}
-<h1>{{ project.name }} — {% trans "Tareas" %}</h1>
-<p><a href="{{ project.get_absolute_url }}">← {% trans "Volver al proyecto" %}</a></p>
+<div class="mb-6">
+    <h1 class="text-2xl font-semibold">{{ project.name }} — {% trans "Tareas" %}</h1>
+    <a href="{{ project.get_absolute_url }}" class="text-sm text-brand-600 hover:underline">← {% trans "Volver al proyecto" %}</a>
+</div>
 
 {% if user_role != "VIEWER" %}
-    <h2>{% trans "Nueva tarea" %}</h2>
-    <form method="post" action="{% url 'tasks:create' project.pk %}">
-        {% csrf_token %}
-        {{ task_form.as_p }}
-        <button type="submit">{% trans "Crear tarea" %}</button>
-    </form>
+    <div class="card mb-6">
+        <h2 class="mb-4 text-lg font-semibold">{% trans "Nueva tarea" %}</h2>
+        <form method="post" action="{% url 'tasks:create' project.pk %}" class="space-y-4">
+            {% csrf_token %}
+            {{ task_form.as_p }}
+            <button type="submit" class="btn-primary">{% trans "Crear tarea" %}</button>
+        </form>
+    </div>
 {% endif %}
 
-<ul>
+<div class="space-y-2">
     {% for task in tasks %}
-        <li>
-            <a href="{{ task.get_absolute_url }}">{{ task.title }}</a>
-            — {{ task.get_status_display }} / {{ task.get_priority_display }}
-        </li>
+        <a href="{{ task.get_absolute_url }}"
+           class="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3 transition-shadow hover:shadow-md dark:border-white/10 dark:bg-gray-900">
+            <span class="font-medium">{{ task.title }}</span>
+            <span class="text-sm text-gray-500 dark:text-gray-400">{{ task.get_status_display }} · {{ task.get_priority_display }}</span>
+        </a>
     {% empty %}
-        <li>{% trans "No hay tareas." %}</li>
+        <div class="rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-500 dark:border-white/10 dark:bg-gray-900 dark:text-gray-400">
+            {% trans "No hay tareas." %}
+        </div>
     {% endfor %}
-</ul>
+</div>
 {% endblock %}
