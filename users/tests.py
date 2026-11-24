@@ -67,7 +67,7 @@ def test_language_switch_to_english(client):
 @pytest.fixture
 def image_file():
     buf = BytesIO()
-    Image.new("RGB", (8, 8), color=(80, 90, 200)).save(buf, format="PNG")
+    Image.new("RGB", (90, 60), color=(80, 90, 200)).save(buf, format="PNG")
     return SimpleUploadedFile(
         "avatar.png", buf.getvalue(), content_type="image/png"
     )
@@ -87,7 +87,11 @@ def test_profile_image_upload(client, image_file, tmp_path):
                 "profile_image": image_file,
             },
         )
-    assert resp.status_code == 302
-    user.refresh_from_db()
-    assert bool(user.profile_image)
-    assert user.profile_image.name.startswith("avatars/")
+        assert resp.status_code == 302
+        user.refresh_from_db()
+        assert bool(user.profile_image)
+        assert user.profile_image.name.startswith("avatars/")
+
+        with user.profile_image.open("rb") as f:
+            img = Image.open(f)
+            assert img.size == (30, 20)
