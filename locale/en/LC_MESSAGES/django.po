@@ -1,0 +1,252 @@
+# Spanish to English translations for planmanager.
+msgid ""
+msgstr ""
+"Project-Id-Version: planmanager\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-24 00:00+0000\n"
+"PO-Revision-Date: 2026-11-24 00:00+0000\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Añadir"
+msgstr "Add"
+
+msgid "Añadir miembro"
+msgstr "Add member"
+
+msgid "Asignada a"
+msgstr "Assigned to"
+
+msgid "asignado a"
+msgstr "assigned to"
+
+msgid "Cambiar tema"
+msgstr "Toggle theme"
+
+msgid "Cancelar"
+msgstr "Cancel"
+
+msgid "Comentar"
+msgstr "Comment"
+
+msgid "Comentarios"
+msgstr "Comments"
+
+msgid "Comentarios recientes"
+msgstr "Recent comments"
+
+msgid "completadas"
+msgstr "completed"
+
+msgid "Completadas"
+msgstr "Completed"
+
+msgid "Crear cuenta"
+msgstr "Create account"
+
+msgid "Crear tarea"
+msgstr "Create task"
+
+msgid "Editar"
+msgstr "Edit"
+
+msgid "Editar proyecto"
+msgstr "Edit project"
+
+msgid "Editar tarea"
+msgstr "Edit task"
+
+msgid "Eliminar"
+msgstr "Delete"
+
+msgid "Eliminar proyecto"
+msgstr "Delete project"
+
+msgid "Eliminar tarea"
+msgstr "Delete task"
+
+msgid "Entrar"
+msgstr "Log in"
+
+msgid "Estado"
+msgstr "Status"
+
+msgid "Fecha límite"
+msgstr "Due date"
+
+msgid "fecha límite"
+msgstr "due date"
+
+msgid "Guardar"
+msgstr "Save"
+
+msgid "Iniciar sesión"
+msgstr "Log in"
+
+msgid "Inicia sesión"
+msgstr "Log in"
+
+msgid "Menú"
+msgstr "Menu"
+
+msgid "Miembros"
+msgstr "Members"
+
+msgid "Mis proyectos"
+msgstr "My projects"
+
+msgid "No hay tareas."
+msgstr "No tasks."
+
+msgid "¿No tienes cuenta?"
+msgstr "Don't have an account?"
+
+msgid "No tienes proyectos todavía."
+msgstr "You don't have any projects yet."
+
+msgid "Nueva tarea"
+msgstr "New task"
+
+msgid "Nuevo proyecto"
+msgstr "New project"
+
+msgid "Panel"
+msgstr "Dashboard"
+
+msgid "Pendientes"
+msgstr "Pending"
+
+msgid "Perfil"
+msgstr "Profile"
+
+msgid "Propietario"
+msgstr "Owner"
+
+msgid "propietario"
+msgstr "owner"
+
+msgid "Proyectos"
+msgstr "Projects"
+
+msgid "Quitar"
+msgstr "Remove"
+
+msgid "Registrarse"
+msgstr "Sign up"
+
+msgid "Regístrate"
+msgstr "Sign up"
+
+msgid "Salir"
+msgstr "Log out"
+
+msgid "¿Seguro que quieres eliminar"
+msgstr "Are you sure you want to delete"
+
+msgid "Sí, eliminar"
+msgstr "Yes, delete"
+
+msgid "Sin actividad."
+msgstr "No activity."
+
+msgid "Sin comentarios."
+msgstr "No comments."
+
+msgid "Sin comentarios todavía."
+msgstr "No comments yet."
+
+msgid "Sin tareas"
+msgstr "No tasks"
+
+msgid "tareas"
+msgstr "tasks"
+
+msgid "Tareas"
+msgstr "Tasks"
+
+msgid "Tareas por estado"
+msgstr "Tasks by status"
+
+msgid "Tareas por prioridad"
+msgstr "Tasks by priority"
+
+msgid "Tareas recientes"
+msgstr "Recent tasks"
+
+msgid "Ver tareas"
+msgstr "View tasks"
+
+msgid "Volver al proyecto"
+msgstr "Back to project"
+
+msgid "¿Ya tienes cuenta?"
+msgstr "Already have an account?"
+
+msgid "nombre"
+msgstr "name"
+
+msgid "descripción"
+msgstr "description"
+
+msgid "rol"
+msgstr "role"
+
+msgid "membresía"
+msgstr "membership"
+
+msgid "membresías"
+msgstr "memberships"
+
+msgid "título"
+msgstr "title"
+
+msgid "estado"
+msgstr "status"
+
+msgid "prioridad"
+msgstr "priority"
+
+msgid "creada por"
+msgstr "created by"
+
+msgid "comentario"
+msgstr "comment"
+
+msgid "archivo"
+msgstr "file"
+
+msgid "Gestor"
+msgstr "Manager"
+
+msgid "Miembro"
+msgstr "Member"
+
+msgid "Invitado"
+msgstr "Viewer"
+
+msgid "Por hacer"
+msgstr "To do"
+
+msgid "En progreso"
+msgstr "In progress"
+
+msgid "En revisión"
+msgstr "In review"
+
+msgid "Hecho"
+msgstr "Done"
+
+msgid "Baja"
+msgstr "Low"
+
+msgid "Media"
+msgstr "Medium"
+
+msgid "Alta"
+msgstr "High"
+
+msgid "Urgente"
+msgstr "Urgent"

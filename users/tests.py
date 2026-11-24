@@ -45,3 +45,15 @@ def test_profile_requires_login(client):
     resp = client.get(reverse("users:profile"))
     assert resp.status_code == 302
     assert resp.url.startswith(reverse("users:login"))
+
+
+@pytest.mark.django_db
+def test_language_switch_to_english(client):
+    resp = client.post(
+        reverse("set_language"),
+        {"language": "en", "next": reverse("users:login")},
+    )
+    assert resp.status_code == 302
+    resp = client.get(reverse("users:login"))
+    assert b"Log in" in resp.content
+    assert b"Iniciar sesi" not in resp.content
