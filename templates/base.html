@@ -43,6 +43,7 @@
 
                 {% if user.is_authenticated %}
                     <div class="hidden items-center gap-4 md:flex">
+                        <a href="{% url 'dashboard' %}" class="text-sm hover:text-brand-600">{% trans "Panel" %}</a>
                         <a href="{% url 'projects:list' %}" class="text-sm hover:text-brand-600">{% trans "Proyectos" %}</a>
                         <a href="{% url 'users:profile' %}" class="text-sm hover:text-brand-600">{% trans "Perfil" %}</a>
                         <form method="post" action="{% url 'users:logout' %}">
@@ -64,6 +65,7 @@
         <div x-show="menuOpen" @click.away="menuOpen = false"
              class="border-t border-gray-200 px-4 py-3 dark:border-white/10 md:hidden">
             {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="block py-2">{% trans "Panel" %}</a>
                 <a href="{% url 'projects:list' %}" class="block py-2">{% trans "Proyectos" %}</a>
                 <a href="{% url 'users:profile' %}" class="block py-2">{% trans "Perfil" %}</a>
                 <form method="post" action="{% url 'users:logout' %}">

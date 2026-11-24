@@ -32,7 +32,7 @@ def test_login_and_logout(client):
         {"username": "test@planmanager.local", "password": "Xyz_12345"},
     )
     assert resp.status_code == 302
-    assert resp.url == reverse("users:profile")
+    assert resp.url == reverse("dashboard")
     assert client.session["_auth_user_id"]
 
     resp = client.post(reverse("users:logout"))
