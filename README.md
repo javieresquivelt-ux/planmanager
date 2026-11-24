@@ -8,9 +8,10 @@ Aplicación web de **gestión de proyectos** con control de acceso basado en **r
 
 - **Autenticación** por email (registro, login, logout, perfil).
 - **Proyectos**: CRUD completo con membresías y roles.
-- **Tareas**: estado, prioridad, fecha límite y asignación.
+- **Tareas**: estado, prioridad, fecha límite y **asignación múltiple** (varios responsables por tarea).
 - **Comentarios** en tareas (sin recarga, vía HTMX).
 - **Adjuntos** de archivos en tareas.
+- **Avatares**: imagen de perfil (redimensionada y circular) visible en tareas, miembros y comentarios.
 - **Dashboard** por usuario con métricas (estados, prioridades, actividad).
 - **Roles por proyecto**: `OWNER`, `MANAGER`, `MEMBER`, `VIEWER`.
 - **UI responsive** (mobile-first) con **dark/light mode**.
@@ -99,7 +100,7 @@ erDiagram
     USER ||--o{ PROJECT_MEMBERSHIP : "miembro"
     PROJECT ||--o{ PROJECT_MEMBERSHIP : "tiene"
     PROJECT ||--o{ TASK : "contiene"
-    USER ||--o{ TASK : "asigna (assignee)"
+    USER }o--o{ TASK : "asigna (assignees, M2M)"
     USER ||--o{ TASK : "crea (created_by)"
     TASK ||--o{ COMMENT : "tiene"
     USER ||--o{ COMMENT : "escribe"
@@ -113,6 +114,7 @@ erDiagram
         boolean is_email_verified
         string first_name
         string last_name
+        string profile_image "ImageField -> media/avatars/"
         boolean is_active
         boolean is_staff
         boolean is_superuser
@@ -140,7 +142,6 @@ erDiagram
         int project_id FK
         string title
         text description
-        int assignee_id FK "nullable (SET_NULL)"
         string status "TODO/IN_PROGRESS/REVIEW/DONE"
         string priority "LOW/MEDIUM/HIGH/URGENT"
         date due_date
@@ -174,10 +175,10 @@ erDiagram
 
 ### Detalle de los modelos
 
-- **`users.User`** — `CustomUser` con `email` como identificador (`USERNAME_FIELD="email"`, `username=None`) y `UserManager` propio.
+- **`users.User`** — `CustomUser` con `email` como identificador (`USERNAME_FIELD="email"`, `username=None`), `UserManager` propio y `profile_image` (avatar).
 - **`projects.Project`** — nombre, descripción y `owner` (creador); `members` como M2M `through` `ProjectMembership`.
 - **`projects.ProjectMembership`** — relación proyecto↔usuario con `role`; `unique_together=(project, user)`, índice `(project, role)` y helper `get_role()`.
-- **`tasks.Task`** — pertenece a un proyecto, con `assignee` (opcional), `status`, `priority` y `due_date`.
+- **`tasks.Task`** — pertenece a un proyecto, con `assignees` (M2M, **varios asignados** opcionales), `status`, `priority` y `due_date`.
 - **`tasks.Comment`** / **`tasks.Attachment`** — comentarios y archivos asociados a una tarea.
 - **`core.SiteConfig`** — singleton de configuración global (`get_or_create(pk=1)`), inyectado por context processor.
 
