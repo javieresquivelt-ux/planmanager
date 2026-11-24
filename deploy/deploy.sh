@@ -12,8 +12,9 @@
 #   sudo bash deploy/deploy.sh <github_url>
 #
 # Requisitos previos del host (deben estar YA instalados):
-#   git, node/npm, docker + docker-compose-plugin, y `uv`.
-# `uv` descarga Python 3.14 automáticamente. El script solo instala gettext.
+#   git, docker + docker-compose-plugin, y `uv`.
+# `uv` descarga Python 3.14 automáticamente.
+# El script instala gettext, nodejs y npm.
 # =============================================================================
 set -euo pipefail
 
@@ -25,9 +26,9 @@ DOMAIN="cystec.cloud"
 echo "==> [1/8] Verificando paquetes base (aditivo)"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -y
-# Python 3.14, git, node/npm y Docker YA están instalados en este VPS.
-# Solo se instala gettext (para `compilemessages` si hiciera falta).
-apt-get install -y --no-install-recommends gettext
+# Python 3.14 (vía uv), git y Docker YA están en el VPS.
+# Se instalan gettext, nodejs y npm (para compilar Tailwind).
+apt-get install -y --no-install-recommends gettext nodejs npm
 
 echo "==> [2/8] Clonando repositorio en $APP_DIR"
 if [ -d "$APP_DIR/.git" ]; then
