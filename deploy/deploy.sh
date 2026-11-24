@@ -40,7 +40,9 @@ fi
 echo "==> [3/8] Creando entorno virtual e instalando dependencias"
 cd "$APP_DIR"
 "$UV" python install 3.14
-"$UV" venv --python 3.14 .venv
+if [ ! -d .venv ]; then
+    "$UV" venv --python 3.14 .venv
+fi
 "$UV" pip install --python .venv/bin/python -e .
 
 echo "==> [4/8] Variables de entorno (.env)"
