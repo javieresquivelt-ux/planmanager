@@ -1,7 +1,16 @@
 import pytest
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
+from django.test import RequestFactory
 
+from tasks.models import Task
+
+from . import permissions
+from .mixins import (
+    ProjectManagerRequiredMixin,
+    ProjectMemberRequiredMixin,
+    ProjectOwnerRequiredMixin,
+)
 from .models import Project, ProjectMembership
 
 User = get_user_model()
@@ -41,3 +50,77 @@ def test_members_m2m_through():
     ProjectMembership.objects.create(project=project, user=user, role="MEMBER")
     assert list(project.members.all()) == [user]
     assert list(user.projects.all()) == [project]
+
+
+def _membership_scenario():
+    owner = User.objects.create_user(email="owner@example.com", password="pass12345")
+    manager = User.objects.create_user(email="manager@example.com", password="pass12345")
+    member = User.objects.create_user(email="member@example.com", password="pass12345")
+    viewer = User.objects.create_user(email="viewer@example.com", password="pass12345")
+    outsider = User.objects.create_user(email="outsider@example.com", password="pass12345")
+    project = Project.objects.create(name="P", owner=owner)
+    ProjectMembership.objects.create(project=project, user=owner, role="OWNER")
+    ProjectMembership.objects.create(project=project, user=manager, role="MANAGER")
+    ProjectMembership.objects.create(project=project, user=member, role="MEMBER")
+    ProjectMembership.objects.create(project=project, user=viewer, role="VIEWER")
+    return owner, manager, member, viewer, outsider, project
+
+
+@pytest.fixture
+def rf():
+    return RequestFactory()
+
+
+@pytest.mark.django_db
+def test_project_access_mixins(rf):
+    owner, manager, member, viewer, outsider, project = _membership_scenario()
+
+    def test_func(view_cls, user):
+        view = view_cls()
+        view.request = rf.get("/")
+        view.request.user = user
+        view.kwargs = {"project_pk": project.pk}
+        return view.test_func()
+
+    assert test_func(ProjectMemberRequiredMixin, owner) is True
+    assert test_func(ProjectMemberRequiredMixin, manager) is True
+    assert test_func(ProjectMemberRequiredMixin, member) is True
+    assert test_func(ProjectMemberRequiredMixin, viewer) is True
+    assert test_func(ProjectMemberRequiredMixin, outsider) is False
+
+    assert test_func(ProjectManagerRequiredMixin, owner) is True
+    assert test_func(ProjectManagerRequiredMixin, manager) is True
+    assert test_func(ProjectManagerRequiredMixin, member) is False
+    assert test_func(ProjectManagerRequiredMixin, viewer) is False
+
+    assert test_func(ProjectOwnerRequiredMixin, owner) is True
+    assert test_func(ProjectOwnerRequiredMixin, manager) is False
+
+
+@pytest.mark.django_db
+def test_permission_matrix():
+    owner, manager, member, viewer, outsider, project = _membership_scenario()
+    own_task = Task.objects.create(project=project, title="own", created_by=member)
+    other_task = Task.objects.create(project=project, title="other", created_by=manager)
+
+    assert permissions.can_view("VIEWER") is True
+    assert permissions.can_view(None) is False
+
+    assert permissions.can_create_task("MEMBER") is True
+    assert permissions.can_create_task("VIEWER") is False
+
+    assert permissions.can_edit_task("MEMBER", own_task, member) is True
+    assert permissions.can_edit_task("MEMBER", other_task, member) is False
+    assert permissions.can_edit_task("MANAGER", other_task, manager) is True
+
+    assert permissions.can_assign_task("MANAGER") is True
+    assert permissions.can_assign_task("MEMBER") is False
+
+    assert permissions.can_comment("MEMBER") is True
+    assert permissions.can_comment("VIEWER") is False
+
+    assert permissions.can_manage_members("OWNER") is True
+    assert permissions.can_manage_members("MANAGER") is False
+
+    assert permissions.can_edit_project("OWNER") is True
+    assert permissions.can_edit_project("MANAGER") is False
