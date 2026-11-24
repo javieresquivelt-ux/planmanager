@@ -92,4 +92,4 @@ class Attachment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
-        return self.file.name
+        return self.file.name or ""

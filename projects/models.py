@@ -3,6 +3,8 @@ from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
+from users.models import User
+
 
 class Project(models.Model):
     name = models.CharField(_("nombre"), max_length=200)
@@ -64,7 +66,7 @@ class ProjectMembership(models.Model):
         return f"{self.user} — {self.project} ({self.get_role_display()})"
 
     @classmethod
-    def get_role(cls, user, project) -> str | None:
+    def get_role(cls, user: User, project: Project) -> str | None:
         """Rol del usuario en el proyecto, o ``None`` si no es miembro."""
         membership = (
             cls.objects.filter(user=user, project=project).only("role").first()

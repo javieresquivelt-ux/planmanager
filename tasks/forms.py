@@ -1,23 +1,35 @@
+from typing import Any
+
 from django import forms
+
+from projects.models import Project
 
 from .models import Comment, Task
 
 
-class TaskForm(forms.ModelForm):
+class TaskForm(forms.ModelForm[Task]):
     class Meta:
         model = Task
         fields = ["title", "description", "assignee", "status", "priority", "due_date"]
         widgets = {"due_date": forms.DateInput(attrs={"type": "date"})}
 
-    def __init__(self, *args, project=None, can_assign=True, **kwargs):
+    def __init__(
+        self,
+        *args: Any,
+        project: Project | None = None,
+        can_assign: bool = True,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(*args, **kwargs)
         if project is not None:
-            self.fields["assignee"].queryset = project.members.all()
+            assignee = self.fields.get("assignee")
+            if isinstance(assignee, forms.ModelChoiceField):
+                assignee.queryset = project.members.all()
         if not can_assign:
             self.fields.pop("assignee", None)
 
 
-class CommentForm(forms.ModelForm):
+class CommentForm(forms.ModelForm[Comment]):
     class Meta:
         model = Comment
         fields = ["body"]

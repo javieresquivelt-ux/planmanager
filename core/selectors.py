@@ -1,25 +1,31 @@
-from django.db.models import Count, OuterRef, Q, Subquery
+from typing import Any
+
+from django.db.models import Count, OuterRef, Q, QuerySet, Subquery
 
 from projects.models import Project, ProjectMembership
 from tasks.models import Comment, Task
+from users.models import User
 
 
-def _count_by_field(qs, field, choices):
-    counts = {value: 0 for value, _ in choices}
-    counts.update(
-        dict(qs.values_list(field).annotate(c=Count("id")).values_list(field, "c"))
-    )
+def _count_by_field(
+    qs: QuerySet[Task], field: str, choices: list[tuple[str, Any]]
+) -> dict[str, int]:
+    counts: dict[str, int] = {value: 0 for value, _ in choices}
+    for value, total in (
+        qs.values_list(field).annotate(c=Count("id")).values_list(field, "c")
+    ):
+        counts[value] = total
     return counts
 
 
-def dashboard_metrics(user):
+def dashboard_metrics(user: User) -> dict[str, Any]:
     role_subquery = (
         ProjectMembership.objects.filter(project=OuterRef("pk"), user=user).values(
             "role"
         )[:1]
     )
 
-    projects = list(
+    projects: list[Project] = list(
         Project.objects.filter(memberships__user=user)
         .select_related("owner")
         .annotate(
@@ -36,7 +42,7 @@ def dashboard_metrics(user):
 
     role_labels = dict(ProjectMembership.Role.choices)
     for project in projects:
-        project.user_role_label = role_labels.get(project.user_role, "")
+        project.user_role_label = role_labels.get(project.user_role, "")  # type: ignore[attr-defined]
 
     project_ids = [p.id for p in projects]
 

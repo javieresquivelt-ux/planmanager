@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from .models import User
 
 
-class UserRegistrationForm(UserCreationForm):
+class UserRegistrationForm(UserCreationForm[User]):
     """Registro por email. La contraseña se hashea vía UserCreationForm."""
 
     class Meta:
@@ -20,7 +20,7 @@ class UserLoginForm(AuthenticationForm):
     )
 
 
-class UserProfileForm(forms.ModelForm):
+class UserProfileForm(forms.ModelForm[User]):
     class Meta:
         model = User
         fields = ("first_name", "last_name", "email")

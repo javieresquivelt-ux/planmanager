@@ -10,6 +10,13 @@ from pathlib import Path
 
 import environ
 
+try:
+    import django_stubs_ext
+
+    django_stubs_ext.monkeypatch()
+except ImportError:
+    pass
+
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 env = environ.Env(

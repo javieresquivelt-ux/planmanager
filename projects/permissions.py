@@ -1,18 +1,23 @@
+from tasks.models import Task
+from users.models import User
+
 from .models import ProjectMembership
 
 Role = ProjectMembership.Role
 
-_ROLE_ORDER = {
+_ROLE_ORDER: dict[str, int] = {
     Role.VIEWER.value: 1,
     Role.MEMBER.value: 2,
     Role.MANAGER.value: 3,
     Role.OWNER.value: 4,
 }
 
-_MANAGER_OR_ABOVE = {Role.MANAGER.value, Role.OWNER.value}
+_MANAGER_OR_ABOVE: set[str] = {Role.MANAGER.value, Role.OWNER.value}
 
 
 def role_at_least(role: str | None, minimum: str) -> bool:
+    if role is None:
+        return False
     return _ROLE_ORDER.get(role, 0) >= _ROLE_ORDER[minimum]
 
 
@@ -24,7 +29,7 @@ def can_create_task(role: str | None) -> bool:
     return role_at_least(role, Role.MEMBER.value)
 
 
-def can_edit_task(role: str | None, task, user) -> bool:
+def can_edit_task(role: str | None, task: Task, user: User) -> bool:
     if role in _MANAGER_OR_ABOVE:
         return True
     if role == Role.MEMBER.value:

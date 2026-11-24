@@ -1,6 +1,10 @@
+from typing import Any, cast
+
+from django import forms
 from django.contrib import messages
-from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import QuerySet
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views import View
@@ -12,39 +16,41 @@ from django.views.generic import (
     UpdateView,
 )
 
+from users.models import User
+
 from . import selectors, services
 from .forms import MemberAddForm, ProjectForm
 from .mixins import ProjectMemberRequiredMixin, ProjectOwnerRequiredMixin
 from .models import Project, ProjectMembership
 
-User = get_user_model()
 
-
-class ProjectListView(LoginRequiredMixin, ListView):
+class ProjectListView(LoginRequiredMixin, ListView[Project]):
     template_name = "projects/list.html"
     context_object_name = "projects"
 
-    def get_queryset(self):
-        return selectors.projects_for_user(self.request.user)
+    def get_queryset(self) -> QuerySet[Project]:
+        return selectors.projects_for_user(cast(User, self.request.user))
 
 
-class ProjectCreateView(LoginRequiredMixin, CreateView):
+class ProjectCreateView(LoginRequiredMixin, CreateView[Project]):
     model = Project
     form_class = ProjectForm
     template_name = "projects/form.html"
 
-    def form_valid(self, form):
-        self.object = services.create_project(owner=self.request.user, **form.cleaned_data)
+    def form_valid(self, form: forms.ModelForm[Project]) -> HttpResponse:
+        self.object = services.create_project(
+            owner=cast(User, self.request.user), **form.cleaned_data
+        )
         return redirect(self.object.get_absolute_url())
 
 
-class ProjectDetailView(ProjectMemberRequiredMixin, DetailView):
+class ProjectDetailView(ProjectMemberRequiredMixin, DetailView[Project]):
     model = Project
     template_name = "projects/detail.html"
     context_object_name = "project"
     pk_url_kwarg = "project_pk"
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         ctx = super().get_context_data(**kwargs)
         ctx["memberships"] = self.object.memberships.select_related("user").all()
         ctx["member_form"] = MemberAddForm()
@@ -53,14 +59,14 @@ class ProjectDetailView(ProjectMemberRequiredMixin, DetailView):
         return ctx
 
 
-class ProjectUpdateView(ProjectOwnerRequiredMixin, UpdateView):
+class ProjectUpdateView(ProjectOwnerRequiredMixin, UpdateView[Project]):
     model = Project
     form_class = ProjectForm
     template_name = "projects/form.html"
     pk_url_kwarg = "project_pk"
 
 
-class ProjectDeleteView(ProjectOwnerRequiredMixin, DeleteView):
+class ProjectDeleteView(ProjectOwnerRequiredMixin, DeleteView[Project]):
     model = Project
     template_name = "projects/confirm_delete.html"
     success_url = reverse_lazy("projects:list")
@@ -68,7 +74,7 @@ class ProjectDeleteView(ProjectOwnerRequiredMixin, DeleteView):
 
 
 class MemberAddView(ProjectOwnerRequiredMixin, View):
-    def post(self, request, project_pk):
+    def post(self, request: HttpRequest, project_pk: int) -> HttpResponse:
         project = self.get_project()
         form = MemberAddForm(request.POST)
         if form.is_valid():
@@ -82,7 +88,9 @@ class MemberAddView(ProjectOwnerRequiredMixin, View):
 
 
 class MemberRoleView(ProjectOwnerRequiredMixin, View):
-    def post(self, request, project_pk, membership_pk):
+    def post(
+        self, request: HttpRequest, project_pk: int, membership_pk: int
+    ) -> HttpResponse:
         project = self.get_project()
         membership = get_object_or_404(
             ProjectMembership, pk=membership_pk, project=project
@@ -94,7 +102,9 @@ class MemberRoleView(ProjectOwnerRequiredMixin, View):
 
 
 class MemberRemoveView(ProjectOwnerRequiredMixin, View):
-    def post(self, request, project_pk, membership_pk):
+    def post(
+        self, request: HttpRequest, project_pk: int, membership_pk: int
+    ) -> HttpResponse:
         project = self.get_project()
         membership = get_object_or_404(
             ProjectMembership, pk=membership_pk, project=project
