@@ -18,15 +18,26 @@
   input[type="number"],
   input[type="search"],
   input[type="date"],
-  textarea,
-  select {
+  textarea {
     @apply w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900
       focus:outline-none focus:ring-2 focus:ring-brand-500/50
       dark:border-white/10 dark:bg-white/5 dark:text-gray-100;
   }
 
+  select {
+    @apply w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900
+      focus:outline-none focus:ring-2 focus:ring-brand-500/50
+      dark:border-white/10 dark:bg-gray-800 dark:text-gray-100;
+  }
+
   select option {
-    @apply bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100;
+    background-color: #ffffff;
+    color: #111827;
+  }
+
+  .dark select option {
+    background-color: #1f2937 !important;
+    color: #f3f4f6 !important;
   }
 }
 
