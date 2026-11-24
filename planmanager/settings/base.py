@@ -36,6 +36,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Apps de negocio
+    "users",
+    "core",
 ]
 
 MIDDLEWARE = [
@@ -61,12 +64,17 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "core.context_processors.site_config",
             ],
         },
     },
 ]
 
 WSGI_APPLICATION = "planmanager.wsgi.application"
+
+
+# Custom user model (definido ANTES de la primera migración)
+AUTH_USER_MODEL = "users.User"
 
 
 # Database
