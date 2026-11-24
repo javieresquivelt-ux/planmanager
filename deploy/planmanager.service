@@ -1,0 +1,17 @@
+[Unit]
+Description=PlanManager Gunicorn daemon
+After=network.target docker.service
+
+[Service]
+User=root
+Group=root
+WorkingDirectory=/opt/planmanager
+EnvironmentFile=/opt/planmanager/.env
+ExecStart=/opt/planmanager/.venv/bin/gunicorn planmanager.wsgi:application \
+    --workers 3 --bind 0.0.0.0:8010 --timeout 120 \
+    --access-logfile - --error-logfile -
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
