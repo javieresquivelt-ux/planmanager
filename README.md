@@ -36,51 +36,50 @@ Aplicación web de **gestión de proyectos** con control de acceso basado en **r
 
 ## Arquitectura
 
-Aplicación **server-driven**: Django renderiza HTML con `DTL`, HTMX actualiza fragmentos sin recarga y Alpine.js gestiona solo micro-estado (menú móvil, toggle de tema). La lógica de negocio se separa en **services** (mutaciones) y **selectors** (lecturas), manteniendo vistas delgadas.
+### Arquitectura de despliegue en VPS Hostinger
+
+La aplicación se encuentra desplegada en un servidor **VPS de Hostinger (Ubuntu 24.04)** operando en producción en el puerto `8010`. La arquitectura de ejecución combina un entorno virtual gestionado por `systemd`, un servidor de aplicaciones `Gunicorn`, persistencia en `PostgreSQL 16` vía contenedor Docker y distribución de estáticos con `WhiteNoise` y archivos multimedia mediante `django.views.static.serve`:
 
 ```mermaid
-flowchart LR
-    subgraph Cliente["Cliente (Navegador)"]
-        DTL["Páginas HTML (DTL)"]
-        HTMX["HTMX (fragmentos reactivos)"]
-        ALPINE["Alpine.js (micro-estado)"]
-        STATIC["Assets locales (Tailwind, JS)"]
+flowchart TD
+    NAV["Navegador<br/>(HTML5 + Tailwind CSS + Alpine.js + HTMX)"]
+
+    subgraph VPS["VPS Hostinger — Ubuntu 24.04"]
+        subgraph VENV[".venv/ — entorno virtual (Python 3.14 + dependencias)"]
+            GUNICORN["Gunicorn (WSGI)<br/>puerto 8010 · 3 workers<br/><i>(systemd: planmanager.service)</i>"]
+
+            subgraph DJANGO["Django 6.1"]
+                APPS["Apps: users · core ·<br/>projects · tasks"]
+                TEMPLATES["Templates (DTL) + HTMX<br/>+ Alpine.js + i18n (ES/EN)"]
+            end
+        end
+
+        STATIC["Estáticos (WhiteNoise)<br/>staticfiles/"]
+        DB[("PostgreSQL 16<br/>(Docker: planmanager_db :5433)")]
+        MEDIA["Media (Imágenes y adjuntos)<br/>media/"]
     end
 
-    subgraph Django["Aplicación Django"]
-        URLS["URLConf"]
-        VISTAS["Vistas (CBV + FBV)"]
-        RBAC["Mixins de permisos (RBAC por rol)"]
-        FORMS["Forms"]
-        SERVICES["Services (mutaciones)"]
-        SELECTORS["Selectors (lecturas)"]
-        MODELS["Models (ORM)"]
-        CTX["Context processors + SiteConfig"]
-        TEMPLATES["Templates (DTL)"]
-        I18N["i18n (gettext ES/EN)"]
-    end
+    NAV <-->|"HTTP :8010"| GUNICORN
+    GUNICORN --> DJANGO
 
-    DB[("PostgreSQL 16")]
+    DJANGO -->|"collectstatic"| STATIC
+    DJANGO -->|"SQL (ORM)"| DB
+    DJANGO -->|"sube / lee"| MEDIA
 
-    DTL -->|"request"| URLS
-    HTMX -->|"hx-request"| URLS
-    URLS --> VISTAS
-    VISTAS --> RBAC
-    VISTAS --> FORMS
-    RBAC --> SERVICES
-    RBAC --> SELECTORS
-    SERVICES --> MODELS
-    SELECTORS --> MODELS
-    MODELS --> DB
-    VISTAS --> TEMPLATES
-    CTX --> TEMPLATES
-    I18N --> TEMPLATES
-    TEMPLATES -->|"HTML"| DTL
-    STATIC --> DTL
-    ALPINE --> DTL
+    STATIC -->|"CSS / JS"| NAV
+    MEDIA -->|"Imágenes / Adjuntos"| NAV
 ```
 
-### Flujo de una petición
+#### Componentes del Despliegue:
+- **Cliente (Navegador):** Interfaz full responsive con soporte dark/light mode construida con Tailwind CSS, micro-interactividad con Alpine.js y actualizaciones reactivas de fragmentos HTML con HTMX.
+- **Entorno Virtual (`.venv/` en `/opt/planmanager/.venv`):** Aísla Python 3.14 y las dependencias del proyecto (`Django`, `psycopg`, `Pillow`, `django-environ`, `whitenoise`).
+- **Gunicorn (WSGI):** Servidor HTTP WSGI corriendo con 3 workers en `0.0.0.0:8010`, orquestado como servicio continuo mediante `systemd` (`planmanager.service`).
+- **Django 6.1 (`planmanager.settings.production`):** Núcleo de la aplicación con separación de servicios/selectores, RBAC y sistema de plantillas bilingüe.
+- **Base de Datos (PostgreSQL 16):** Contenedor Docker `planmanager_db` con mapeo de puerto `5433:5432`, aislando la base de datos dentro de la VPS y evitando colisiones de puertos.
+- **Estáticos (`staticfiles/`):** Compilados y optimizados mediante `collectstatic` y entregados eficientemente al navegador vía `WhiteNoise` con almacenamiento comprimido.
+- **Multimedia (`media/`):** Almacenamiento local para avatares (`avatars/`) y adjuntos de tareas (`attachments/`), servidos dinámicamente en producción mediante `django.views.static.serve`.
+
+### Flujo de una petición (Server-Driven)
 
 1. El navegador envía la petición a la **URLConf** (`planmanager/urls.py`), que enruta por app (`users`, `projects`, `tasks`, `core`).
 2. La **vista** (CBV o FBV) aplica el **RBAC** mediante mixins (`ProjectMemberRequiredMixin`, `ProjectManagerRequiredMixin`, `ProjectOwnerRequiredMixin`).
@@ -96,80 +95,89 @@ flowchart LR
 
 ```mermaid
 erDiagram
-    USER ||--o{ PROJECT : "owner"
-    USER ||--o{ PROJECT_MEMBERSHIP : "miembro"
+    USER ||--o{ PROJECT : "owner (creador)"
+    USER ||--o{ PROJECT_MEMBERSHIP : "pertenece"
     PROJECT ||--o{ PROJECT_MEMBERSHIP : "tiene"
     PROJECT ||--o{ TASK : "contiene"
-    USER }o--o{ TASK : "asigna (assignees, M2M)"
+    USER ||--o{ TASK_ASSIGNEES : "es asignado"
+    TASK ||--o{ TASK_ASSIGNEES : "asigna a"
     USER ||--o{ TASK : "crea (created_by)"
     TASK ||--o{ COMMENT : "tiene"
-    USER ||--o{ COMMENT : "escribe"
-    TASK ||--o{ ATTACHMENT : "tiene"
-    USER ||--o{ ATTACHMENT : "sube"
+    USER ||--o{ COMMENT : "escribe (author)"
+    TASK ||--o{ ATTACHMENT : "contiene"
+    USER ||--o{ ATTACHMENT : "sube (uploaded_by)"
 
     USER {
         int id PK
-        string email UK "identificador único (sin username)"
-        string password
-        boolean is_email_verified
-        string first_name
-        string last_name
+        string email UK "Login único (sin username)"
+        string password "Hash PBKDF2"
+        string first_name "Nombre"
+        string last_name "Apellido"
+        boolean is_email_verified "Email verificado"
         string profile_image "ImageField -> media/avatars/"
-        boolean is_active
-        boolean is_staff
-        boolean is_superuser
+        boolean is_active "Estado activo"
+        boolean is_staff "Acceso admin"
+        boolean is_superuser "Superusuario"
+        datetime date_joined "Fecha de registro"
+        datetime last_login "Último inicio de sesión"
     }
 
     PROJECT {
         int id PK
-        string name
-        text description
-        int owner_id FK
-        datetime created_at
-        datetime updated_at
+        string name "Nombre del proyecto"
+        text description "Descripción detallada"
+        int owner_id FK "Usuario propietario"
+        datetime created_at "Fecha creación"
+        datetime updated_at "Última modificación"
     }
 
     PROJECT_MEMBERSHIP {
         int id PK
-        int project_id FK
-        int user_id FK
-        string role "OWNER/MANAGER/MEMBER/VIEWER"
-        datetime joined_at
+        int project_id FK "Proyecto"
+        int user_id FK "Usuario miembro"
+        string role "OWNER, MANAGER, MEMBER, VIEWER"
+        datetime joined_at "Fecha de ingreso"
     }
 
     TASK {
         int id PK
-        int project_id FK
-        string title
-        text description
-        string status "TODO/IN_PROGRESS/REVIEW/DONE"
-        string priority "LOW/MEDIUM/HIGH/URGENT"
-        date due_date
-        int created_by_id FK "nullable (SET_NULL)"
-        datetime created_at
-        datetime updated_at
+        int project_id FK "Proyecto contenedor"
+        string title "Título de la tarea"
+        text description "Descripción"
+        string status "TODO, IN_PROGRESS, REVIEW, DONE"
+        string priority "LOW, MEDIUM, HIGH, URGENT"
+        date due_date "Fecha límite (opcional)"
+        int created_by_id FK "Usuario creador (nullable)"
+        datetime created_at "Fecha creación"
+        datetime updated_at "Última modificación"
+    }
+
+    TASK_ASSIGNEES {
+        int id PK
+        int task_id FK "Tarea"
+        int user_id FK "Usuario asignado"
     }
 
     COMMENT {
         int id PK
-        int task_id FK
-        int author_id FK
-        text body
-        datetime created_at
+        int task_id FK "Tarea comentada"
+        int author_id FK "Usuario autor"
+        text body "Contenido del comentario"
+        datetime created_at "Fecha de publicación"
     }
 
     ATTACHMENT {
         int id PK
-        int task_id FK
-        int uploaded_by_id FK
-        string file "FileField -> media/"
-        datetime created_at
+        int task_id FK "Tarea asociada"
+        int uploaded_by_id FK "Usuario que sube"
+        string file "FileField -> media/attachments/"
+        datetime created_at "Fecha de subida"
     }
 
     SITE_CONFIG {
-        int id PK "singleton (pk=1)"
-        string site_name
-        string support_email
+        int id PK "Singleton (pk=1)"
+        string site_name "Nombre del sitio"
+        string support_email "Email de soporte"
     }
 ```
 
