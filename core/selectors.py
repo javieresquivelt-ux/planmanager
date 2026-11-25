@@ -1,6 +1,7 @@
 from typing import Any
 
 from django.db.models import Count, OuterRef, Q, QuerySet, Subquery
+from django.utils.translation import gettext_lazy as _
 
 from projects.models import Project, ProjectMembership
 from tasks.models import Comment, Task
@@ -25,9 +26,14 @@ def dashboard_metrics(user: User) -> dict[str, Any]:
         )[:1]
     )
 
+    base_qs = (
+        Project.objects.all()
+        if user.is_superuser
+        else Project.objects.filter(memberships__user=user)
+    )
+
     projects: list[Project] = list(
-        Project.objects.filter(memberships__user=user)
-        .select_related("owner")
+        base_qs.select_related("owner")
         .annotate(
             user_role=Subquery(role_subquery),
             task_count=Count("tasks", distinct=True),
@@ -42,7 +48,10 @@ def dashboard_metrics(user: User) -> dict[str, Any]:
 
     role_labels = dict(ProjectMembership.Role.choices)
     for project in projects:
-        project.user_role_label = role_labels.get(project.user_role, "")  # type: ignore[attr-defined]
+        if user.is_superuser:
+            project.user_role_label = role_labels.get(project.user_role, "") or _("Superadmin")  # type: ignore[attr-defined]
+        else:
+            project.user_role_label = role_labels.get(project.user_role, "")  # type: ignore[attr-defined]
 
     project_ids = [p.id for p in projects]
 

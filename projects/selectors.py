@@ -7,9 +7,13 @@ from .models import Project
 
 
 def projects_for_user(user: User) -> QuerySet[Project]:
+    qs = (
+        Project.objects.all()
+        if user.is_superuser
+        else Project.objects.filter(memberships__user=user)
+    )
     return (
-        Project.objects.filter(memberships__user=user)
-        .select_related("owner")
+        qs.select_related("owner")
         .prefetch_related("memberships__user")
         .annotate(
             task_count=Count("tasks", distinct=True),

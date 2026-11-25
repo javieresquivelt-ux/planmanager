@@ -36,15 +36,34 @@ class UserManager(BaseUserManager["User"]):
 
 
 class User(AbstractUser):
+    class GlobalRole(models.TextChoices):
+        JP = "JP", _("Jefe de Proyecto")
+        MEMBER = "MEMBER", _("Miembro")
+
     username = None  # type: ignore[assignment]
     email = models.EmailField(unique=True)
     is_email_verified = models.BooleanField(default=False)
     profile_image = models.ImageField(_("foto de perfil"), upload_to="avatars/", blank=True)
+    global_role = models.CharField(
+        _("rol global"),
+        max_length=20,
+        choices=GlobalRole.choices,
+        default=GlobalRole.MEMBER,
+        db_index=True,
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: list[str] = []  # type: ignore[misc]
 
     objects = UserManager()  # type: ignore[assignment, misc]
+
+    @property
+    def can_create_projects(self) -> bool:
+        return bool(self.is_superuser or self.global_role == self.GlobalRole.JP)
+
+    @property
+    def is_jp(self) -> bool:
+        return self.global_role == self.GlobalRole.JP
 
     def __str__(self) -> str:
         return self.email

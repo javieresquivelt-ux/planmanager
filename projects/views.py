@@ -1,12 +1,15 @@
+import csv
 from typing import Any, cast
 
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views import View
 from django.views.generic import (
     CreateView,
@@ -32,14 +35,89 @@ class ProjectListView(LoginRequiredMixin, ListView[Project]):
         return selectors.projects_for_user(cast(User, self.request.user))
 
 
+class ProjectPortfolioCSVView(LoginRequiredMixin, View):
+    def get(self, request: HttpRequest) -> HttpResponse:
+        user = cast(User, request.user)
+        projects = selectors.projects_for_user(user).prefetch_related(
+            "tasks__assignees"
+        )
+
+        filename = (
+            f"portafolio_proyectos_{timezone.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        )
+        response = HttpResponse(content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+        # UTF-8 BOM para soporte nativo en Excel
+        response.write("\ufeff")
+
+        writer = csv.writer(response)
+        writer.writerow([
+            "Nombre-Proyecto",
+            "Tareas",
+            "Estado",
+            "Prioridad",
+            "Fecha Creación",
+            "Fecha Límite",
+            "Asignado A",
+        ])
+
+        for project in projects:
+            tasks = project.tasks.all()
+            if not tasks.exists():
+                writer.writerow([
+                    project.name,
+                    "Sin tareas",
+                    "-",
+                    "-",
+                    project.created_at.strftime("%Y-%m-%d"),
+                    "-",
+                    "-",
+                ])
+            else:
+                for task in tasks:
+                    assignees = (
+                        ", ".join(
+                            a.get_full_name() or a.email
+                            for a in task.assignees.all()
+                        )
+                        or "Sin asignar"
+                    )
+                    writer.writerow([
+                        project.name,
+                        task.title,
+                        task.get_status_display(),
+                        task.get_priority_display(),
+                        task.created_at.strftime("%Y-%m-%d"),
+                        (
+                            task.due_date.strftime("%Y-%m-%d")
+                            if task.due_date
+                            else "-"
+                        ),
+                        assignees,
+                    ])
+
+        return response
+
+
 class ProjectCreateView(LoginRequiredMixin, CreateView[Project]):
     model = Project
     form_class = ProjectForm
     template_name = "projects/form.html"
 
+    def dispatch(
+        self, request: HttpRequest, *args: Any, **kwargs: Any
+    ) -> HttpResponse:
+        if not request.user.is_authenticated:
+            return cast(HttpResponse, self.handle_no_permission())
+        user = request.user
+        if not user.can_create_projects:
+            raise PermissionDenied("No tienes permisos para crear proyectos.")
+        return cast(HttpResponse, super().dispatch(request, *args, **kwargs))
+
     def form_valid(self, form: forms.ModelForm[Project]) -> HttpResponse:
         self.object = services.create_project(
-            owner=cast(User, self.request.user), **form.cleaned_data
+            creator=cast(User, self.request.user), **form.cleaned_data
         )
         return redirect(self.object.get_absolute_url())
 

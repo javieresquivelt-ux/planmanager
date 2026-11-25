@@ -57,7 +57,14 @@
 
 <div class="grid gap-6 lg:grid-cols-3">
     <div class="lg:col-span-2">
-        <h2 class="mb-3 text-lg font-semibold">{% trans "Proyectos" %}</h2>
+        <div class="mb-3 flex items-center justify-between">
+            <h2 class="text-lg font-semibold">{% trans "Proyectos" %}</h2>
+            <a href="{% url 'projects:export_csv' %}"
+               class="inline-flex items-center gap-1 text-xs text-brand-600 hover:underline dark:text-brand-400 font-medium">
+                <span>📥</span>
+                <span>{% trans "Exportar portafolio (CSV)" %}</span>
+            </a>
+        </div>
         <div class="space-y-3">
             {% for project in projects %}
                 <a href="{{ project.get_absolute_url }}" class="card block transition-shadow hover:shadow-md">

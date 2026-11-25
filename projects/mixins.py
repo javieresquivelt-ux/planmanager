@@ -26,6 +26,8 @@ class ProjectAccessMixin:
         return project
 
     def get_role(self) -> str | None:
+        if self.request.user.is_superuser:
+            return ProjectMembership.Role.OWNER.value
         role = self._role
         if role is None:
             role = ProjectMembership.get_role(

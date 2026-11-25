@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load i18n avatars %}
+
+{% block title %}{% trans "Gestión de Usuarios" %} · {{ site.site_name }}{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl font-semibold">{% trans "Gestión de Usuarios y Roles" %}</h1>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        {% trans "Administra qué usuarios tienen autorización para crear y gestionar proyectos (JP) o colaborar como miembros." %}
+    </p>
+</div>
+
+<div class="card overflow-x-auto p-0">
+    <table class="w-full text-left text-sm">
+        <thead class="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wider text-gray-500 dark:border-white/10 dark:bg-gray-900/50 dark:text-gray-400">
+            <tr>
+                <th class="px-6 py-3">{% trans "Usuario" %}</th>
+                <th class="px-6 py-3">{% trans "Email" %}</th>
+                <th class="px-6 py-3">{% trans "Estado" %}</th>
+                <th class="px-6 py-3">{% trans "Rol Global / Permiso" %}</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200 dark:divide-white/10">
+            {% for u in users_list %}
+                <tr class="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5">
+                    <td class="flex items-center gap-3 px-6 py-4">
+                        {% avatar u %}
+                        <div>
+                            <span class="font-medium block">{{ u.get_full_name|default:u.email }}</span>
+                            {% if u.is_superuser %}
+                                <span class="text-xs text-purple-600 dark:text-purple-400 font-semibold">{% trans "Superadministrador" %}</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-gray-600 dark:text-gray-400 font-mono text-xs">
+                        {{ u.email }}
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if u.is_active %}
+                            <span class="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                                <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                                {% trans "Activo" %}
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center gap-1.5 text-xs text-gray-400 font-medium">
+                                <span class="h-2 w-2 rounded-full bg-gray-400"></span>
+                                {% trans "Inactivo" %}
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        {% include "users/partials/role_badge.html" with u=u %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="4" class="px-6 py-8 text-center text-gray-500">
+                        {% trans "No hay usuarios registrados." %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

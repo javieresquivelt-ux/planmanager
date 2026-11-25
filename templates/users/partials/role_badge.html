@@ -1,0 +1,36 @@
+{% load i18n %}
+<div id="role-toggle-{{ u.pk }}" class="inline-flex items-center gap-2">
+    {% if u.is_superuser %}
+        <span class="inline-flex items-center rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-semibold text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+            ★ {% trans "Superadmin" %}
+        </span>
+    {% elif u.global_role == "JP" %}
+        <span class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">
+            {% trans "Jefe de Proyecto (JP)" %}
+        </span>
+        <form method="post" action="{% url 'users:update_role' u.pk %}"
+              hx-post="{% url 'users:update_role' u.pk %}"
+              hx-target="#role-toggle-{{ u.pk }}"
+              hx-swap="outerHTML" class="inline">
+            {% csrf_token %}
+            <input type="hidden" name="role" value="MEMBER">
+            <button type="submit" class="text-xs text-gray-500 hover:text-brand-600 underline">
+                {% trans "Cambiar a Member" %}
+            </button>
+        </form>
+    {% else %}
+        <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+            {% trans "Miembro (Member)" %}
+        </span>
+        <form method="post" action="{% url 'users:update_role' u.pk %}"
+              hx-post="{% url 'users:update_role' u.pk %}"
+              hx-target="#role-toggle-{{ u.pk }}"
+              hx-swap="outerHTML" class="inline">
+            {% csrf_token %}
+            <input type="hidden" name="role" value="JP">
+            <button type="submit" class="text-xs text-brand-600 hover:underline font-medium">
+                {% trans "Promover a JP" %}
+            </button>
+        </form>
+    {% endif %}
+</div>

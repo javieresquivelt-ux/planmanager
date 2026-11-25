@@ -6,6 +6,7 @@ app_name = "projects"
 
 urlpatterns = [
     path("", views.ProjectListView.as_view(), name="list"),
+    path("export/csv/", views.ProjectPortfolioCSVView.as_view(), name="export_csv"),
     path("new/", views.ProjectCreateView.as_view(), name="create"),
     path("<int:project_pk>/", views.ProjectDetailView.as_view(), name="detail"),
     path("<int:project_pk>/edit/", views.ProjectUpdateView.as_view(), name="update"),

@@ -6,7 +6,7 @@ from django.urls import reverse
 
 from tasks.models import Task
 
-from . import permissions
+from . import permissions, services
 from .mixins import (
     ProjectManagerRequiredMixin,
     ProjectMemberRequiredMixin,
@@ -99,6 +99,98 @@ def test_project_access_mixins(rf):
 
 
 @pytest.mark.django_db
+def test_create_project_by_jp_assigns_superadmin_as_owner():
+    superadmin = User.objects.create_superuser(
+        email="boss@example.com", password="pwd"
+    )
+    jp = User.objects.create_user(
+        email="jp@example.com", password="pwd", global_role=User.GlobalRole.JP
+    )
+
+    project = services.create_project(creator=jp, name="Proyecto Especial")
+
+    assert project.owner == superadmin
+    assert project.memberships.filter(
+        user=superadmin, role=ProjectMembership.Role.OWNER
+    ).exists()
+    assert project.memberships.filter(
+        user=jp, role=ProjectMembership.Role.MANAGER
+    ).exists()
+
+
+@pytest.mark.django_db
+def test_create_project_view_rbac_member_forbidden_jp_allowed(client):
+    User.objects.create_superuser(email="admin@example.com", password="pwd")
+    member = User.objects.create_user(email="m@example.com", password="pwd")
+    jp = User.objects.create_user(
+        email="jp2@example.com", password="pwd", global_role=User.GlobalRole.JP
+    )
+
+    # Member no puede crear
+    client.force_login(member)
+    resp = client.get(reverse("projects:create"))
+    assert resp.status_code == 403
+
+    resp = client.post(reverse("projects:create"), {"name": "Intento Ilegal"})
+    assert resp.status_code == 403
+
+    # JP sí puede crear
+    client.force_login(jp)
+    resp = client.get(reverse("projects:create"))
+    assert resp.status_code == 200
+
+    resp = client.post(
+        reverse("projects:create"),
+        {"name": "Proyecto Autorizado", "description": "OK"},
+    )
+    assert resp.status_code == 302
+    assert Project.objects.filter(name="Proyecto Autorizado").exists()
+
+
+@pytest.mark.django_db
+def test_superadmin_has_owner_access_without_prior_membership(rf):
+    superadmin = User.objects.create_superuser(
+        email="omni@example.com", password="pwd"
+    )
+    owner = User.objects.create_user(email="o2@example.com", password="pwd")
+    project = Project.objects.create(name="Proyecto Privado", owner=owner)
+
+    view = ProjectOwnerRequiredMixin()
+    view.request = rf.get("/")
+    view.request.user = superadmin
+    view.kwargs = {"project_pk": project.pk}
+
+    assert view.test_func() is True
+    assert view.get_role() == ProjectMembership.Role.OWNER.value
+
+
+@pytest.mark.django_db
+def test_project_portfolio_csv_export(client):
+    superadmin = User.objects.create_superuser(
+        email="csv_admin@example.com", password="pwd"
+    )
+    p = services.create_project(creator=superadmin, name="Proyecto CSV")
+    Task.objects.create(project=p, title="Tarea 1", created_by=superadmin)
+
+    # Anónimo redirige
+    resp = client.get(reverse("projects:export_csv"))
+    assert resp.status_code == 302
+
+    # Autenticado descarga CSV
+    client.force_login(superadmin)
+    resp = client.get(reverse("projects:export_csv"))
+    assert resp.status_code == 200
+    assert resp["Content-Type"] == "text/csv; charset=utf-8"
+    assert "attachment; filename=" in resp["Content-Disposition"]
+
+    content = resp.content.decode("utf-8")
+    assert content.startswith("\ufeff")  # BOM presente
+    assert "Nombre-Proyecto,Tareas,Estado,Prioridad" in content
+    assert "Proyecto CSV" in content
+    assert "Tarea 1" in content
+
+
+@pytest.mark.django_db
 def test_permission_matrix():
     owner, manager, member, viewer, outsider, project = _membership_scenario()
     own_task = Task.objects.create(project=project, title="own", created_by=member)
@@ -142,7 +234,9 @@ def test_project_list_only_member_projects(client):
 
 @pytest.mark.django_db
 def test_project_create_creates_owner_membership(client):
-    user = User.objects.create_user(email="new@example.com", password="pass12345")
+    user = User.objects.create_superuser(
+        email="new@example.com", password="pass12345"
+    )
     client.force_login(user)
     resp = client.post(
         reverse("projects:create"), {"name": "Nuevo", "description": "d"}

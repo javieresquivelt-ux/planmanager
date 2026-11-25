@@ -18,4 +18,6 @@ urlpatterns = [
     ),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("profile/", views.ProfileView.as_view(), name="profile"),
+    path("manage/", views.UserManagementView.as_view(), name="manage"),
+    path("<int:user_pk>/role/", views.UserRoleUpdateView.as_view(), name="update_role"),
 ]
