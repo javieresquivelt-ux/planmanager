@@ -46,8 +46,9 @@ htmlcov/
 .mypy_cache/
 .ruff_cache/
 
-# Documentación interna de trabajo (HARNESS)
+# Documentación interna de trabajo (HARNESS / Operación sensible)
 agent.md
 spec.md
 memory.md
 task.md
+operation.md

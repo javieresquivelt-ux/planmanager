@@ -290,6 +290,28 @@ npm run watch               # compila en modo watch
 
 ---
 
+## Operación en Producción (VPS Hostinger)
+
+Comandos frecuentes para la administración de la aplicación en el servidor:
+
+```bash
+# Gestión del servicio systemd
+systemctl status planmanager       # Ver estatus
+systemctl restart planmanager      # Reiniciar servicio
+journalctl -u planmanager -f       # Ver logs en vivo
+
+# Ejecutar comandos Django en la VPS (usando la ruta del .venv o tras 'source .venv/bin/activate')
+cd /opt/planmanager
+/opt/planmanager/.venv/bin/python manage.py createsuperuser
+/opt/planmanager/.venv/bin/python manage.py shell -c "from users.models import User; print(User.objects.filter(email='usuario@ejemplo.com').delete())"
+
+# Consultas y respaldos rápidos en PostgreSQL (Docker)
+docker exec -i planmanager_db psql -U planmanager_user -d planmanager_db -c "SELECT id, email, is_active FROM users_user;"
+docker exec -i planmanager_db pg_dump -U planmanager_user -d planmanager_db > /opt/planmanager/backups/backup_$(date +%Y%m%d_%H%M%S).sql
+```
+
+---
+
 ## Créditos y agradecimientos
 
 - **Creador:** Javier Esquivel
