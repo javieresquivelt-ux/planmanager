@@ -26,13 +26,25 @@
            class="flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 transition-shadow hover:shadow-md dark:border-white/10 dark:bg-gray-900">
             <div class="flex min-w-0 items-center gap-3">
                 {% if task.assignees.all %}
-                    <span class="flex -space-x-2">
+                    <span class="flex -space-x-2 shrink-0">
                         {% for a in task.assignees.all %}
                             {% avatar a %}
                         {% endfor %}
                     </span>
                 {% endif %}
-                <span class="truncate font-medium">{{ task.title }}</span>
+                <div class="min-w-0">
+                    <span class="truncate font-medium block">{{ task.title }}</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400 flex flex-wrap items-center gap-1.5 mt-0.5">
+                        <span>{% trans "Creada" %}: {{ task.created_at|date:"d M Y" }}</span>
+                        {% if task.due_date %}
+                            <span>·</span>
+                            <span class="font-medium text-brand-600 dark:text-brand-400 flex items-center gap-1">
+                                <span>📅</span>
+                                <span>{% trans "Límite" %}: {{ task.due_date|date:"d M Y" }}</span>
+                            </span>
+                        {% endif %}
+                    </span>
+                </div>
             </div>
             <span class="flex shrink-0 items-center gap-2">
                 <span class="{{ task.status|status_badge }}">{{ task.get_status_display }}</span>

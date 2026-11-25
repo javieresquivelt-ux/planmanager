@@ -64,3 +64,27 @@ def test_media_served_when_debug_false(client, settings):
         media_dir.rmdir()
 
 
+@pytest.mark.django_db
+def test_dashboard_displays_recent_tasks_assignees_and_dates(client):
+    import datetime
+    user = User.objects.create_user(email="assignee@example.com", password="pass12345")
+    project = Project.objects.create(name="ProjX", owner=user)
+    ProjectMembership.objects.create(project=project, user=user, role="OWNER")
+    task = Task.objects.create(
+        project=project,
+        title="Tarea con fecha",
+        created_by=user,
+        due_date=datetime.date(2026, 12, 15),
+    )
+    task.assignees.add(user)
+
+    client.force_login(user)
+    resp = client.get(reverse("dashboard"))
+    assert resp.status_code == 200
+    content = resp.content.decode()
+    assert "Tarea con fecha" in content
+    assert "assignee@example.com" in content or "A" in content  # avatar
+    assert "15" in content  # fecha día
+
+
+

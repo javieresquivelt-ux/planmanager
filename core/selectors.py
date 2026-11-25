@@ -63,7 +63,11 @@ def dashboard_metrics(user: User) -> dict[str, Any]:
         for value, label in Task.Priority.choices
     ]
 
-    recent_tasks = list(tasks.select_related("project").order_by("-created_at")[:10])
+    recent_tasks = list(
+        tasks.select_related("project")
+        .prefetch_related("assignees")
+        .order_by("-created_at")[:10]
+    )
     recent_comments = list(
         Comment.objects.filter(task__project_id__in=project_ids)
         .select_related("task", "task__project", "author")

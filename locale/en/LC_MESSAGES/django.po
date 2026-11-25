@@ -259,3 +259,10 @@ msgstr "assignees"
 
 msgid "Asignados"
 msgstr "Assignees"
+
+msgid "Creada"
+msgstr "Created"
+
+msgid "Límite"
+msgstr "Due"
+

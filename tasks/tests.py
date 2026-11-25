@@ -116,6 +116,7 @@ def test_status_change_member_not_own_forbidden(client):
     assert resp.status_code == 403
 
 
+
 @pytest.mark.django_db
 def test_add_comment_htmx_partial(client):
     owner, manager, member, viewer, project, task = _task_scenario()
@@ -134,3 +135,20 @@ def test_add_comment_viewer_forbidden(client):
     url = reverse("tasks:comment", kwargs={"project_pk": project.pk, "pk": task.pk})
     resp = client.post(url, {"body": "hola"})
     assert resp.status_code == 403
+
+
+@pytest.mark.django_db
+def test_task_list_displays_dates(client):
+    import datetime
+    owner, manager, member, viewer, project, task = _task_scenario()
+    task.due_date = datetime.date(2026, 12, 31)
+    task.save()
+
+    client.force_login(member)
+    resp = client.get(reverse("tasks:list", kwargs={"project_pk": project.pk}))
+    assert resp.status_code == 200
+    content = resp.content.decode()
+    assert "Creada:" in content or "Created:" in content
+    assert "Límite:" in content or "Due:" in content
+    assert "2026" in content
+
