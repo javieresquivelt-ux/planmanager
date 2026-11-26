@@ -58,14 +58,14 @@
                 {% endif %}
             </div>
 
-            <div class="rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-gray-600 dark:border-white/10 dark:bg-white/5 dark:text-gray-400">
-                <p class="font-medium text-gray-700 dark:text-gray-300 mb-1.5 flex items-center gap-1.5">
-                    <svg class="h-4 w-4 text-brand-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="rounded-lg border border-gray-200 bg-gray-50 p-3.5 text-xs text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                <p class="mb-2 flex items-center gap-1.5 font-semibold text-gray-800 dark:text-gray-100">
+                    <svg class="h-4 w-4 flex-shrink-0 text-brand-600 dark:text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                     </svg>
                     {% trans "Requisitos de la contraseña:" %}
                 </p>
-                <ul class="list-disc list-inside space-y-1">
+                <ul class="list-disc list-inside space-y-1 text-gray-600 dark:text-gray-300">
                     <li>{% trans "Mínimo 8 caracteres." %}</li>
                     <li>{% trans "No debe ser muy común ni similar a tus datos personales." %}</li>
                     <li>{% trans "No puede ser completamente numérica." %}</li>
@@ -74,9 +74,9 @@
 
             <button type="submit" class="btn-primary w-full">{% trans "Crear cuenta" %}</button>
         </form>
-        <p class="mt-4 text-center text-sm">
+        <p class="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
             {% trans "¿Ya tienes cuenta?" %}
-            <a href="{% url 'users:login' %}" class="text-brand-600 hover:underline">{% trans "Inicia sesión" %}</a>
+            <a href="{% url 'users:login' %}" class="text-brand-600 dark:text-brand-400 font-medium hover:underline">{% trans "Inicia sesión" %}</a>
         </p>
     </div>
 </div>

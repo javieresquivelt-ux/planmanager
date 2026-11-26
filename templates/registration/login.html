@@ -16,9 +16,9 @@
             <input type="hidden" name="next" value="{{ next }}">
             <button type="submit" class="btn-primary w-full">{% trans "Entrar" %}</button>
         </form>
-        <p class="mt-4 text-center text-sm">
+        <p class="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
             {% trans "¿No tienes cuenta?" %}
-            <a href="{% url 'users:register' %}" class="text-brand-600 hover:underline">{% trans "Regístrate" %}</a>
+            <a href="{% url 'users:register' %}" class="text-brand-600 dark:text-brand-400 font-medium hover:underline">{% trans "Regístrate" %}</a>
         </p>
     </div>
 </div>
