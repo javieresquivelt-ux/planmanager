@@ -72,19 +72,21 @@ def dashboard_metrics(user: User) -> dict[str, Any]:
         for value, label in Task.Priority.choices
     ]
 
+    active_projects = [p for p in projects if p.status != Project.Status.CLOSED]
+    closed_projects = [p for p in projects if p.status == Project.Status.CLOSED]
+    active_project_ids = [p.id for p in active_projects]
+
     recent_tasks = list(
-        tasks.select_related("project")
+        Task.objects.filter(project_id__in=active_project_ids)
+        .select_related("project")
         .prefetch_related("assignees")
         .order_by("-created_at")[:10]
     )
     recent_comments = list(
-        Comment.objects.filter(task__project_id__in=project_ids)
+        Comment.objects.filter(task__project_id__in=active_project_ids)
         .select_related("task", "task__project", "author")
         .order_by("-created_at")[:10]
     )
-
-    active_projects = [p for p in projects if p.status != Project.Status.CLOSED]
-    closed_projects = [p for p in projects if p.status == Project.Status.CLOSED]
 
     return {
         "projects": projects,

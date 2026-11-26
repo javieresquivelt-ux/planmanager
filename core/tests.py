@@ -66,6 +66,25 @@ def test_dashboard_active_and_closed_projects_tabs(client):
 
 
 @pytest.mark.django_db
+def test_dashboard_excludes_closed_project_tasks_from_recent(client):
+    user = User.objects.create_user(email="u2@example.com", password="pass12345")
+    p_active = Project.objects.create(name="P Activo", owner=user, status=Project.Status.OPEN)
+    ProjectMembership.objects.create(project=p_active, user=user, role="OWNER")
+    t_active = Task.objects.create(title="Tarea Activa", project=p_active)
+
+    p_closed = Project.objects.create(name="P Cerrado", owner=user, status=Project.Status.CLOSED)
+    ProjectMembership.objects.create(project=p_closed, user=user, role="OWNER")
+    t_closed = Task.objects.create(title="Tarea Cerrada", project=p_closed)
+
+    client.force_login(user)
+    resp = client.get(reverse("dashboard"))
+    assert resp.status_code == 200
+    recent_tasks = resp.context["recent_tasks"]
+    assert t_active in recent_tasks
+    assert t_closed not in recent_tasks
+
+
+@pytest.mark.django_db
 def test_media_served_when_debug_false(client, settings):
     settings.DEBUG = False
     media_dir = settings.MEDIA_ROOT / "test_avatars"

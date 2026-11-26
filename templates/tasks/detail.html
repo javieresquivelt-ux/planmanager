@@ -4,6 +4,14 @@
 {% block title %}{{ task.title }} · {{ site.site_name }}{% endblock %}
 
 {% block content %}
+<div class="mb-2">
+    <a href="{% url 'tasks:list' task.project_id %}" class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors group">
+        <svg class="h-4 w-4 transition-transform group-hover:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        <span>{% trans "Volver a Tareas" %}</span>
+    </a>
+</div>
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
     <div>
         <h1 class="text-2xl font-semibold">{{ task.title }}</h1>

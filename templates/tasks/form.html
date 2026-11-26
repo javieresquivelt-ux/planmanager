@@ -3,6 +3,14 @@
 
 {% block content %}
 <div class="mx-auto max-w-lg">
+    <div class="mb-3">
+        <a href="{% if object %}{{ object.get_absolute_url }}{% else %}{% url 'tasks:list' project.pk %}{% endif %}" class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors group">
+            <svg class="h-4 w-4 transition-transform group-hover:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span>{% if object %}{% trans "Volver a la Tarea" %}{% else %}{% trans "Volver a Tareas" %}{% endif %}</span>
+        </a>
+    </div>
     <div class="card">
         <h1 class="mb-6 text-2xl font-semibold">
             {% if object %}{% trans "Editar tarea" %}{% else %}{% trans "Nueva tarea" %}{% endif %}
@@ -10,7 +18,12 @@
         <form method="post" class="space-y-4">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit" class="btn-primary w-full">{% trans "Guardar" %}</button>
+            <div class="flex items-center gap-3 pt-2">
+                <button type="submit" class="btn-primary flex-1">{% trans "Guardar" %}</button>
+                <a href="{% if object %}{{ object.get_absolute_url }}{% else %}{% url 'tasks:list' project.pk %}{% endif %}" class="btn-secondary text-center">
+                    {% trans "Cancelar" %}
+                </a>
+            </div>
         </form>
     </div>
 </div>

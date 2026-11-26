@@ -296,3 +296,22 @@ msgstr "Delete comment"
 msgid "¿Estás seguro de que deseas eliminar este comentario?"
 msgstr "Are you sure you want to delete this comment?"
 
+msgid "Volver al Panel"
+msgstr "Back to Dashboard"
+
+msgid "Volver a Proyectos"
+msgstr "Back to Projects"
+
+msgid "Volver al Proyecto"
+msgstr "Back to Project"
+
+msgid "Volver a Tareas"
+msgstr "Back to Tasks"
+
+msgid "Volver a la Tarea"
+msgstr "Back to Task"
+
+msgid "Volver"
+msgstr "Back"
+
+
