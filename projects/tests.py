@@ -217,7 +217,8 @@ def test_permission_matrix():
     assert permissions.can_comment("VIEWER") is False
 
     assert permissions.can_manage_members("OWNER") is True
-    assert permissions.can_manage_members("MANAGER") is False
+    assert permissions.can_manage_members("MANAGER") is True
+    assert permissions.can_manage_members("MEMBER") is False
 
     assert permissions.can_edit_project("OWNER") is True
     assert permissions.can_edit_project("MANAGER") is False
@@ -260,18 +261,20 @@ def test_project_detail_outsider_forbidden(client):
 
 
 @pytest.mark.django_db
-def test_member_add_owner_only(client):
+def test_member_management_permissions(client):
     owner, manager, member, viewer, outsider, project = _membership_scenario()
 
-    client.force_login(manager)
+    # Miembro ordinario no puede agregar miembros (403)
+    client.force_login(member)
     resp = client.post(
         reverse("projects:member_add", kwargs={"project_pk": project.pk}),
         {"email": "x@example.com", "role": "MEMBER"},
     )
     assert resp.status_code == 403
 
+    # Manager / JP SÍ puede agregar miembros
     User.objects.create_user(email="added@example.com", password="pass12345")
-    client.force_login(owner)
+    client.force_login(manager)
     resp = client.post(
         reverse("projects:member_add", kwargs={"project_pk": project.pk}),
         {"email": "added@example.com", "role": "MEMBER"},
@@ -279,3 +282,26 @@ def test_member_add_owner_only(client):
     assert resp.status_code == 302
     added = User.objects.get(email="added@example.com")
     assert ProjectMembership.get_role(added, project) == "MEMBER"
+
+    # Manager no puede eliminar al OWNER
+    owner_membership = ProjectMembership.objects.get(project=project, user=owner)
+    resp = client.post(
+        reverse(
+            "projects:member_remove",
+            kwargs={"project_pk": project.pk, "membership_pk": owner_membership.pk},
+        )
+    )
+    assert resp.status_code == 302
+    assert ProjectMembership.objects.filter(pk=owner_membership.pk).exists()
+
+    # Manager no puede degradar al OWNER
+    resp = client.post(
+        reverse(
+            "projects:member_role",
+            kwargs={"project_pk": project.pk, "membership_pk": owner_membership.pk},
+        ),
+        {"role": "MEMBER"},
+    )
+    assert resp.status_code == 302
+    owner_membership.refresh_from_db()
+    assert owner_membership.role == "OWNER"

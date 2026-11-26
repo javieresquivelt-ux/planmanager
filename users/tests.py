@@ -11,6 +11,16 @@ User = get_user_model()
 
 
 @pytest.mark.django_db
+def test_register_view_renders_form(client):
+    resp = client.get(reverse("users:register"))
+    assert resp.status_code == 200
+    content = resp.content.decode()
+    assert "password1" in content
+    assert "password2" in content
+    assert "Requisitos de la contraseña" in content
+
+
+@pytest.mark.django_db
 def test_register_hashes_password_and_redirects(client):
     resp = client.post(
         reverse("users:register"),

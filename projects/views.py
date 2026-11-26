@@ -23,7 +23,11 @@ from users.models import User
 
 from . import selectors, services
 from .forms import MemberAddForm, ProjectForm
-from .mixins import ProjectMemberRequiredMixin, ProjectOwnerRequiredMixin
+from .mixins import (
+    ProjectManagerRequiredMixin,
+    ProjectMemberRequiredMixin,
+    ProjectOwnerRequiredMixin,
+)
 from .models import Project, ProjectMembership
 
 
@@ -131,9 +135,22 @@ class ProjectDetailView(ProjectMemberRequiredMixin, DetailView[Project]):
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         ctx = super().get_context_data(**kwargs)
         ctx["memberships"] = self.object.memberships.select_related("user").all()
-        ctx["member_form"] = MemberAddForm()
-        ctx["role_choices"] = ProjectMembership.Role.choices
-        ctx["user_role"] = self.get_role()
+        user_role = self.get_role()
+        ctx["user_role"] = user_role
+
+        role_choices = list(ProjectMembership.Role.choices)
+        if user_role != ProjectMembership.Role.OWNER:
+            role_choices = [
+                c for c in role_choices if c[0] != ProjectMembership.Role.OWNER
+            ]
+        ctx["role_choices"] = role_choices
+
+        member_form = MemberAddForm()
+        if user_role != ProjectMembership.Role.OWNER:
+            cast(forms.ChoiceField, member_form.fields["role"]).choices = (
+                role_choices
+            )
+        ctx["member_form"] = member_form
         return ctx
 
 
@@ -151,13 +168,19 @@ class ProjectDeleteView(ProjectOwnerRequiredMixin, DeleteView[Project]):
     pk_url_kwarg = "project_pk"
 
 
-class MemberAddView(ProjectOwnerRequiredMixin, View):
+class MemberAddView(ProjectManagerRequiredMixin, View):
     def post(self, request: HttpRequest, project_pk: int) -> HttpResponse:
         project = self.get_project()
         form = MemberAddForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data["email"]
             role = form.cleaned_data["role"]
+            current_role = self.get_role()
+            if (
+                current_role != ProjectMembership.Role.OWNER
+                and role == ProjectMembership.Role.OWNER
+            ):
+                role = ProjectMembership.Role.MANAGER
             try:
                 services.add_member(project, email, role)
             except User.DoesNotExist:
@@ -165,7 +188,7 @@ class MemberAddView(ProjectOwnerRequiredMixin, View):
         return redirect("projects:detail", project_pk=project.pk)
 
 
-class MemberRoleView(ProjectOwnerRequiredMixin, View):
+class MemberRoleView(ProjectManagerRequiredMixin, View):
     def post(
         self, request: HttpRequest, project_pk: int, membership_pk: int
     ) -> HttpResponse:
@@ -173,13 +196,29 @@ class MemberRoleView(ProjectOwnerRequiredMixin, View):
         membership = get_object_or_404(
             ProjectMembership, pk=membership_pk, project=project
         )
+        current_role = self.get_role()
         role = request.POST.get("role")
-        if role in ProjectMembership.Role.values:
+        if (
+            membership.role == ProjectMembership.Role.OWNER
+            and current_role != ProjectMembership.Role.OWNER
+        ):
+            messages.error(
+                request, "No puedes modificar el rol del propietario."
+            )
+        elif (
+            role == ProjectMembership.Role.OWNER
+            and current_role != ProjectMembership.Role.OWNER
+        ):
+            messages.error(
+                request,
+                "No tienes permiso para asignar el rol de propietario.",
+            )
+        elif role in ProjectMembership.Role.values:
             services.set_membership_role(membership, role)
         return redirect("projects:detail", project_pk=project.pk)
 
 
-class MemberRemoveView(ProjectOwnerRequiredMixin, View):
+class MemberRemoveView(ProjectManagerRequiredMixin, View):
     def post(
         self, request: HttpRequest, project_pk: int, membership_pk: int
     ) -> HttpResponse:

@@ -34,21 +34,27 @@
                         <p class="text-sm text-gray-500 dark:text-gray-400">{{ m.get_role_display }}</p>
                     </div>
                 </div>
-                {% if user_role == "OWNER" %}
+                {% if user_role == "OWNER" or user_role == "MANAGER" %}
                     <div class="flex items-center gap-2">
-                        <form method="post" action="{% url 'projects:member_role' project.pk m.pk %}">
-                            {% csrf_token %}
-                            <select name="role" onchange="this.form.submit()" class="!w-auto">
-                                {% for value, label in role_choices %}
-                                    <option value="{{ value }}" {% if m.role == value %}selected{% endif %}>{{ label }}</option>
-                                {% endfor %}
-                            </select>
-                        </form>
-                        {% if m.role != "OWNER" %}
-                            <form method="post" action="{% url 'projects:member_remove' project.pk m.pk %}">
+                        {% if m.role == "OWNER" and user_role != "OWNER" %}
+                            <span class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                {% trans "Propietario" %}
+                            </span>
+                        {% else %}
+                            <form method="post" action="{% url 'projects:member_role' project.pk m.pk %}">
                                 {% csrf_token %}
-                                <button type="submit" class="btn-secondary">{% trans "Quitar" %}</button>
+                                <select name="role" onchange="this.form.submit()" class="!w-auto">
+                                    {% for value, label in role_choices %}
+                                        <option value="{{ value }}" {% if m.role == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
                             </form>
+                            {% if m.role != "OWNER" %}
+                                <form method="post" action="{% url 'projects:member_remove' project.pk m.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-secondary">{% trans "Quitar" %}</button>
+                                </form>
+                            {% endif %}
                         {% endif %}
                     </div>
                 {% endif %}
@@ -56,7 +62,7 @@
         {% endfor %}
     </ul>
 
-    {% if user_role == "OWNER" %}
+    {% if user_role == "OWNER" or user_role == "MANAGER" %}
         <h3 class="mb-3 mt-6 text-base font-semibold">{% trans "Añadir miembro" %}</h3>
         <form method="post" action="{% url 'projects:member_add' project.pk %}" class="space-y-4">
             {% csrf_token %}

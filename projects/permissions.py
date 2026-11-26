@@ -50,7 +50,7 @@ def can_attach(role: str | None) -> bool:
 
 
 def can_manage_members(role: str | None) -> bool:
-    return role == Role.OWNER.value
+    return role in _MANAGER_OR_ABOVE
 
 
 def can_edit_project(role: str | None) -> bool:
