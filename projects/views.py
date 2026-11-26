@@ -21,7 +21,7 @@ from django.views.generic import (
 
 from users.models import User
 
-from . import selectors, services
+from . import permissions, selectors, services
 from .forms import MemberAddForm, ProjectForm
 from .mixins import (
     ProjectManagerRequiredMixin,
@@ -37,6 +37,19 @@ class ProjectListView(LoginRequiredMixin, ListView[Project]):
 
     def get_queryset(self) -> QuerySet[Project]:
         return selectors.projects_for_user(cast(User, self.request.user))
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        ctx = super().get_context_data(**kwargs)
+        projects = list(ctx["projects"])
+        ctx["active_projects"] = [
+            p for p in projects if p.status != Project.Status.CLOSED
+        ]
+        ctx["closed_projects"] = [
+            p for p in projects if p.status == Project.Status.CLOSED
+        ]
+        ctx["active_projects_count"] = len(ctx["active_projects"])
+        ctx["closed_projects_count"] = len(ctx["closed_projects"])
+        return ctx
 
 
 class ProjectPortfolioCSVView(LoginRequiredMixin, View):
@@ -151,14 +164,26 @@ class ProjectDetailView(ProjectMemberRequiredMixin, DetailView[Project]):
                 role_choices
             )
         ctx["member_form"] = member_form
+        ctx["can_edit_project"] = permissions.can_edit_project(user_role)
+        ctx["project_status_choices"] = Project.Status.choices
         return ctx
 
 
-class ProjectUpdateView(ProjectOwnerRequiredMixin, UpdateView[Project]):
+class ProjectUpdateView(ProjectManagerRequiredMixin, UpdateView[Project]):
     model = Project
     form_class = ProjectForm
     template_name = "projects/form.html"
     pk_url_kwarg = "project_pk"
+
+
+class ProjectStatusView(ProjectManagerRequiredMixin, View):
+    def post(self, request: HttpRequest, project_pk: int) -> HttpResponse:
+        project = self.get_project()
+        status = request.POST.get("status")
+        if status in Project.Status.values:
+            project.status = status
+            project.save(update_fields=["status"])
+        return redirect("projects:detail", project_pk=project.pk)
 
 
 class ProjectDeleteView(ProjectOwnerRequiredMixin, DeleteView[Project]):

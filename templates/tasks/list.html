@@ -5,7 +5,7 @@
 
 {% block content %}
 <div x-data="{
-    view: localStorage.getItem('task_view_pref') || 'kanban',
+    view: localStorage.getItem('task_view_pref') || (window.innerWidth < 768 ? 'list' : 'kanban'),
     showNewTask: {% if task_form.errors %}true{% else %}false{% endif %},
     setView(v) {
         this.view = v;
@@ -101,16 +101,16 @@
 
     <!-- TABLERO KANBAN (Metodología Ágil) -->
     <div x-show="view === 'kanban'" x-transition:enter="transition duration-150" class="space-y-4">
-        <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:overflow-visible">
+        <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-4 lg:gap-5 md:overflow-visible">
             {% for col in kanban_columns %}
-                <div class="min-w-[280px] flex-1 snap-center flex flex-col rounded-xl border border-gray-200 bg-gray-100/70 p-3 dark:border-white/10 dark:bg-gray-900/70">
+                <div class="flex-none w-[85vw] sm:w-[320px] md:w-auto md:min-w-0 md:flex-initial snap-center flex flex-col rounded-xl border border-gray-200 bg-gray-100/70 p-3 dark:border-white/10 dark:bg-gray-900/70">
                     <!-- Cabecera de columna -->
-                    <div class="mb-3 flex items-center justify-between px-1">
-                        <div class="flex items-center gap-2">
-                            <span class="h-2.5 w-2.5 rounded-full {{ col.dot_color }}"></span>
-                            <h3 class="font-semibold text-sm text-gray-800 dark:text-gray-200">{{ col.label }}</h3>
+                    <div class="mb-3 flex items-center justify-between px-1.5 gap-2">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="h-2.5 w-2.5 rounded-full shrink-0 {{ col.dot_color }}"></span>
+                            <h3 class="font-semibold text-sm text-gray-800 dark:text-gray-200 truncate">{{ col.label }}</h3>
                         </div>
-                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full {{ col.badge_class }}">
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 ml-auto {{ col.badge_class }}">
                             {{ col.tasks|length }}
                         </span>
                     </div>

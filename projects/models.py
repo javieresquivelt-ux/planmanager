@@ -7,8 +7,20 @@ from users.models import User
 
 
 class Project(models.Model):
+    class Status(models.TextChoices):
+        OPEN = "OPEN", _("Abierto")
+        ON_HOLD = "ON_HOLD", _("En pausa")
+        CLOSED = "CLOSED", _("Cerrado")
+
     name = models.CharField(_("nombre"), max_length=200)
     description = models.TextField(_("descripción"), blank=True)
+    status = models.CharField(
+        _("estado"),
+        max_length=20,
+        choices=Status.choices,
+        default=Status.OPEN,
+        db_index=True,
+    )
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

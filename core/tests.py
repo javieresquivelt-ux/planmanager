@@ -49,6 +49,23 @@ def test_dashboard_only_own_projects(client):
 
 
 @pytest.mark.django_db
+def test_dashboard_active_and_closed_projects_tabs(client):
+    user = User.objects.create_user(email="u@example.com", password="pass12345")
+    p_active = Project.objects.create(name="P Activo", owner=user, status=Project.Status.OPEN)
+    ProjectMembership.objects.create(project=p_active, user=user, role="OWNER")
+    p_closed = Project.objects.create(name="P Cerrado", owner=user, status=Project.Status.CLOSED)
+    ProjectMembership.objects.create(project=p_closed, user=user, role="OWNER")
+
+    client.force_login(user)
+    resp = client.get(reverse("dashboard"))
+    assert resp.status_code == 200
+    assert p_active in resp.context["active_projects"]
+    assert p_closed in resp.context["closed_projects"]
+    assert resp.context["active_projects_count"] == 1
+    assert resp.context["closed_projects_count"] == 1
+
+
+@pytest.mark.django_db
 def test_media_served_when_debug_false(client, settings):
     settings.DEBUG = False
     media_dir = settings.MEDIA_ROOT / "test_avatars"

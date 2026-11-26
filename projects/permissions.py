@@ -1,4 +1,4 @@
-from tasks.models import Task
+from tasks.models import Comment, Task
 from users.models import User
 
 from .models import ProjectMembership
@@ -45,6 +45,20 @@ def can_comment(role: str | None) -> bool:
     return role_at_least(role, Role.MEMBER.value)
 
 
+def can_edit_comment(role: str | None, comment: Comment, user: User) -> bool:
+    if role is None:
+        return False
+    return comment.author_id == user.id
+
+
+def can_delete_comment(role: str | None, comment: Comment, user: User) -> bool:
+    if role in _MANAGER_OR_ABOVE:
+        return True
+    if role_at_least(role, Role.MEMBER.value):
+        return comment.author_id == user.id
+    return False
+
+
 def can_attach(role: str | None) -> bool:
     return role_at_least(role, Role.MEMBER.value)
 
@@ -54,4 +68,4 @@ def can_manage_members(role: str | None) -> bool:
 
 
 def can_edit_project(role: str | None) -> bool:
-    return role == Role.OWNER.value
+    return role in _MANAGER_OR_ABOVE

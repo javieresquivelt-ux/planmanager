@@ -209,3 +209,39 @@ def test_task_status_update_with_next_url(client):
     task.refresh_from_db()
     assert task.status == Task.Status.IN_PROGRESS
 
+
+@pytest.mark.django_db
+def test_comment_edit_and_delete(client):
+    owner, manager, member, viewer, project, task = _task_scenario()
+    comment = Comment.objects.create(task=task, author=member, body="Comentario original")
+
+    # Autor (member) puede editar su comentario
+    client.force_login(member)
+    edit_url = reverse(
+        "tasks:comment_update",
+        kwargs={"project_pk": project.pk, "pk": task.pk, "comment_pk": comment.pk},
+    )
+    resp = client.post(edit_url, {"body": "Comentario editado"}, HTTP_HX_REQUEST="true")
+    assert resp.status_code == 200
+    comment.refresh_from_db()
+    assert comment.body == "Comentario editado"
+
+    # Otro usuario (viewer u otro member) no puede editar
+    client.force_login(viewer)
+    resp = client.post(edit_url, {"body": "Hack"})
+    assert resp.status_code == 403
+
+    # Otro usuario ordinario no puede eliminar el comentario de otro
+    delete_url = reverse(
+        "tasks:comment_delete",
+        kwargs={"project_pk": project.pk, "pk": task.pk, "comment_pk": comment.pk},
+    )
+    resp = client.post(delete_url)
+    assert resp.status_code == 403
+
+    # Manager / JP SÍ puede moderar y eliminar el comentario
+    client.force_login(manager)
+    resp = client.post(delete_url, HTTP_HX_REQUEST="true")
+    assert resp.status_code == 200
+    assert not Comment.objects.filter(pk=comment.pk).exists()
+

@@ -83,8 +83,15 @@ def dashboard_metrics(user: User) -> dict[str, Any]:
         .order_by("-created_at")[:10]
     )
 
+    active_projects = [p for p in projects if p.status != Project.Status.CLOSED]
+    closed_projects = [p for p in projects if p.status == Project.Status.CLOSED]
+
     return {
         "projects": projects,
+        "active_projects": active_projects,
+        "closed_projects": closed_projects,
+        "active_projects_count": len(active_projects),
+        "closed_projects_count": len(closed_projects),
         "total_projects": len(projects),
         "total_tasks": total_tasks,
         "done_tasks": done_tasks,

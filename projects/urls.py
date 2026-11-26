@@ -9,6 +9,7 @@ urlpatterns = [
     path("export/csv/", views.ProjectPortfolioCSVView.as_view(), name="export_csv"),
     path("new/", views.ProjectCreateView.as_view(), name="create"),
     path("<int:project_pk>/", views.ProjectDetailView.as_view(), name="detail"),
+    path("<int:project_pk>/status/", views.ProjectStatusView.as_view(), name="status"),
     path("<int:project_pk>/edit/", views.ProjectUpdateView.as_view(), name="update"),
     path(
         "<int:project_pk>/delete/",

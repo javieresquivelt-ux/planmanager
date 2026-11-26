@@ -21,7 +21,7 @@ from users.models import User
 
 from . import selectors, services
 from .forms import CommentForm, TaskForm
-from .models import Task
+from .models import Comment, Task
 
 _MANAGER_OR_ABOVE = {
     ProjectMembership.Role.MANAGER.value,
@@ -218,6 +218,55 @@ class CommentCreateView(ProjectMemberRequiredMixin, View):
             "can_comment": permissions.can_comment(role),
             "comments": selectors.comments_for_task(task),
             "form": CommentForm(),
+            "user_role": role,
+        }
+        if request.headers.get("HX-Request"):
+            return render(request, "tasks/partials/comments.html", context)
+        return redirect("tasks:detail", project_pk=task.project_id, pk=task.pk)
+
+
+class CommentUpdateView(ProjectMemberRequiredMixin, View):
+    def post(
+        self, request: HttpRequest, project_pk: int, pk: int, comment_pk: int
+    ) -> HttpResponse:
+        task = get_object_or_404(Task, pk=pk, project=self.get_project())
+        comment = get_object_or_404(Comment, pk=comment_pk, task=task)
+        role = self.get_role()
+        user = cast(User, request.user)
+        if not permissions.can_edit_comment(role, comment, user):
+            return HttpResponseForbidden()
+        form = CommentForm(request.POST, instance=comment)
+        if form.is_valid():
+            services.update_comment(comment, form.cleaned_data["body"])
+        context = {
+            "task": task,
+            "can_comment": permissions.can_comment(role),
+            "comments": selectors.comments_for_task(task),
+            "form": CommentForm(),
+            "user_role": role,
+        }
+        if request.headers.get("HX-Request"):
+            return render(request, "tasks/partials/comments.html", context)
+        return redirect("tasks:detail", project_pk=task.project_id, pk=task.pk)
+
+
+class CommentDeleteView(ProjectMemberRequiredMixin, View):
+    def post(
+        self, request: HttpRequest, project_pk: int, pk: int, comment_pk: int
+    ) -> HttpResponse:
+        task = get_object_or_404(Task, pk=pk, project=self.get_project())
+        comment = get_object_or_404(Comment, pk=comment_pk, task=task)
+        role = self.get_role()
+        user = cast(User, request.user)
+        if not permissions.can_delete_comment(role, comment, user):
+            return HttpResponseForbidden()
+        services.delete_comment(comment)
+        context = {
+            "task": task,
+            "can_comment": permissions.can_comment(role),
+            "comments": selectors.comments_for_task(task),
+            "form": CommentForm(),
+            "user_role": role,
         }
         if request.headers.get("HX-Request"):
             return render(request, "tasks/partials/comments.html", context)

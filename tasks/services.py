@@ -32,3 +32,13 @@ def change_task_status(task: Task, status: str) -> Task:
 
 def add_comment(task: Task, author: User, body: str) -> Comment:
     return Comment.objects.create(task=task, author=author, body=body)
+
+
+def update_comment(comment: Comment, body: str) -> Comment:
+    comment.body = body
+    comment.save(update_fields=["body"])
+    return comment
+
+
+def delete_comment(comment: Comment) -> None:
+    comment.delete()

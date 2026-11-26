@@ -221,7 +221,8 @@ def test_permission_matrix():
     assert permissions.can_manage_members("MEMBER") is False
 
     assert permissions.can_edit_project("OWNER") is True
-    assert permissions.can_edit_project("MANAGER") is False
+    assert permissions.can_edit_project("MANAGER") is True
+    assert permissions.can_edit_project("MEMBER") is False
 
 
 @pytest.mark.django_db
@@ -305,3 +306,49 @@ def test_member_management_permissions(client):
     assert resp.status_code == 302
     owner_membership.refresh_from_db()
     assert owner_membership.role == "OWNER"
+
+
+@pytest.mark.django_db
+def test_project_status_management(client):
+    owner, manager, member, viewer, outsider, project = _membership_scenario()
+    assert project.status == Project.Status.OPEN
+
+    # Manager / JP puede cambiar el estado a ON_HOLD y CLOSED
+    client.force_login(manager)
+    status_url = reverse("projects:status", kwargs={"project_pk": project.pk})
+    resp = client.post(status_url, {"status": "ON_HOLD"})
+    assert resp.status_code == 302
+    project.refresh_from_db()
+    assert project.status == Project.Status.ON_HOLD
+
+    resp = client.post(status_url, {"status": "CLOSED"})
+    assert resp.status_code == 302
+    project.refresh_from_db()
+    assert project.status == Project.Status.CLOSED
+
+    # Miembro ordinario no tiene permiso para cambiar el estado (403)
+    client.force_login(member)
+    resp = client.post(status_url, {"status": "OPEN"})
+    assert resp.status_code == 403
+
+
+@pytest.mark.django_db
+def test_project_list_active_and_closed_partition(client):
+    owner, manager, member, viewer, outsider, project1 = _membership_scenario()
+    project2 = Project.objects.create(
+        name="Proyecto Cerrado", owner=owner, status=Project.Status.CLOSED
+    )
+    ProjectMembership.objects.create(
+        project=project2, user=owner, role=ProjectMembership.Role.OWNER
+    )
+
+    client.force_login(owner)
+    resp = client.get(reverse("projects:list"))
+    assert resp.status_code == 200
+
+    active = resp.context["active_projects"]
+    closed = resp.context["closed_projects"]
+
+    assert project1 in active
+    assert project2 not in active
+    assert project2 in closed

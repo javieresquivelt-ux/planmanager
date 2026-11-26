@@ -6,13 +6,28 @@
 {% block content %}
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
     <div>
-        <h1 class="text-2xl font-semibold">{{ project.name }}</h1>
-        <p class="text-sm text-gray-500 dark:text-gray-400">{% trans "Propietario" %}: {{ project.owner.email }}</p>
+        <div class="flex items-center gap-2.5">
+            <h1 class="text-2xl font-semibold">{{ project.name }}</h1>
+            <span class="{{ project.status|project_status_badge }}">{{ project.get_status_display }}</span>
+        </div>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{% trans "Propietario" %}: {{ project.owner.email }}</p>
     </div>
-    <div class="flex gap-2">
+    <div class="flex items-center gap-2">
+        {% if can_edit_project %}
+            <form method="post" action="{% url 'projects:status' project.pk %}" class="inline-flex items-center">
+                {% csrf_token %}
+                <select name="status" onchange="this.form.submit()" class="!w-auto !py-1.5 !px-2.5 !text-xs font-medium rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 cursor-pointer">
+                    {% for val, label in project_status_choices %}
+                        <option value="{{ val }}" {% if project.status == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        {% endif %}
         <a href="{% url 'tasks:list' project.pk %}" class="btn-brand">{% trans "Ver tareas" %}</a>
-        {% if user_role == "OWNER" %}
+        {% if can_edit_project %}
             <a href="{% url 'projects:update' project.pk %}" class="btn-secondary">{% trans "Editar" %}</a>
+        {% endif %}
+        {% if user_role == "OWNER" %}
             <a href="{% url 'projects:delete' project.pk %}" class="btn-danger">{% trans "Eliminar" %}</a>
         {% endif %}
     </div>

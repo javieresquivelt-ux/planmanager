@@ -9,6 +9,7 @@ def create_project(
     owner: User | None = None,
     name: str,
     description: str = "",
+    status: str = Project.Status.OPEN,
 ) -> Project:
     actual_creator = creator or owner
     if actual_creator is None:
@@ -28,7 +29,7 @@ def create_project(
         creator_role = ProjectMembership.Role.MANAGER
 
     project = Project.objects.create(
-        owner=actual_owner, name=name, description=description
+        owner=actual_owner, name=name, description=description, status=status
     )
     ProjectMembership.objects.get_or_create(
         project=project,

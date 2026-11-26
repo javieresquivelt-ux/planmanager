@@ -1,48 +1,101 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n badges %}
 
 {% block title %}{% trans "Mis proyectos" %} · {{ site.site_name }}{% endblock %}
 
 {% block content %}
-<div class="flex items-center justify-between">
-    <h1 class="text-2xl font-semibold">{% trans "Mis proyectos" %}</h1>
-    <div class="flex items-center gap-2">
-        <a href="{% url 'projects:export_csv' %}"
-           class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-white/10 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-white/5">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <span>{% trans "Exportar CSV" %}</span>
-        </a>
-        {% if user.can_create_projects %}
-            <a href="{% url 'projects:create' %}" class="btn-primary">{% trans "Nuevo proyecto" %}</a>
-        {% endif %}
-    </div>
-</div>
-
-<div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-    {% for project in projects %}
-        <a href="{{ project.get_absolute_url }}" class="card block transition-shadow hover:shadow-md">
-            <div class="flex items-center gap-3">
-                <span class="brand-mark">{{ project.name|slice:":1"|upper }}</span>
-                <h2 class="font-semibold">{{ project.name }}</h2>
+<div x-data="{ tab: 'active' }">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+            <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">{% trans "Mis proyectos" %}</h1>
+            <!-- Pestañas Activos / Cerrados -->
+            <div class="inline-flex rounded-lg border border-gray-200 bg-white p-0.5 text-xs shadow-sm dark:border-white/10 dark:bg-gray-900">
+                <button type="button"
+                        @click="tab = 'active'"
+                        :class="tab === 'active' ? 'bg-brand-600 text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'"
+                        class="rounded-md px-3 py-1 font-medium transition-colors">
+                    {% trans "Activos" %} ({{ active_projects_count }})
+                </button>
+                <button type="button"
+                        @click="tab = 'closed'"
+                        :class="tab === 'closed' ? 'bg-brand-600 text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'"
+                        class="rounded-md px-3 py-1 font-medium transition-colors">
+                    {% trans "Cerrados" %} ({{ closed_projects_count }})
+                </button>
             </div>
-            {% if project.description %}
-                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{{ project.description|truncatechars:80 }}</p>
-            {% endif %}
-            {% if project.task_count %}
-                <div class="progress-track mt-4">
-                    <div class="progress-fill" style="width: {% widthratio project.done_count project.task_count 100 %}%"></div>
-                </div>
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    {{ project.done_count }}/{{ project.task_count }} {% trans "tareas" %}
-                </p>
-            {% endif %}
-        </a>
-    {% empty %}
-        <div class="card col-span-full text-sm text-gray-500 dark:text-gray-400">
-            {% trans "No tienes proyectos todavía." %}
         </div>
-    {% endfor %}
+        <div class="flex items-center gap-2">
+            <a href="{% url 'projects:export_csv' %}"
+               class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-white/10 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-white/5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>{% trans "Exportar CSV" %}</span>
+            </a>
+            {% if user.can_create_projects %}
+                <a href="{% url 'projects:create' %}" class="btn-primary">{% trans "Nuevo proyecto" %}</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Cuadrícula de Proyectos Activos -->
+    <div x-show="tab === 'active'" class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {% for project in active_projects %}
+            <a href="{{ project.get_absolute_url }}" class="card block transition-shadow hover:shadow-md">
+                <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-3">
+                        <span class="brand-mark">{{ project.name|slice:":1"|upper }}</span>
+                        <h2 class="font-semibold text-gray-900 dark:text-gray-100">{{ project.name }}</h2>
+                    </div>
+                    <span class="{{ project.status|project_status_badge }} text-[11px]">{{ project.get_status_display }}</span>
+                </div>
+                {% if project.description %}
+                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{{ project.description|truncatechars:80 }}</p>
+                {% endif %}
+                {% if project.task_count %}
+                    <div class="progress-track mt-4">
+                        <div class="progress-fill" style="width: {% widthratio project.done_count project.task_count 100 %}%"></div>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        {{ project.done_count }}/{{ project.task_count }} {% trans "tareas" %}
+                    </p>
+                {% endif %}
+            </a>
+        {% empty %}
+            <div class="card col-span-full text-sm text-gray-500 dark:text-gray-400">
+                {% trans "No hay proyectos activos." %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Cuadrícula de Proyectos Cerrados -->
+    <div x-show="tab === 'closed'" class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" x-cloak>
+        {% for project in closed_projects %}
+            <a href="{{ project.get_absolute_url }}" class="card block opacity-90 transition-shadow hover:shadow-md hover:opacity-100">
+                <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-3">
+                        <span class="brand-mark !bg-gray-500">{{ project.name|slice:":1"|upper }}</span>
+                        <h2 class="font-semibold text-gray-900 dark:text-gray-100">{{ project.name }}</h2>
+                    </div>
+                    <span class="{{ project.status|project_status_badge }} text-[11px]">{{ project.get_status_display }}</span>
+                </div>
+                {% if project.description %}
+                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{{ project.description|truncatechars:80 }}</p>
+                {% endif %}
+                {% if project.task_count %}
+                    <div class="progress-track mt-4">
+                        <div class="progress-fill !bg-gray-400" style="width: {% widthratio project.done_count project.task_count 100 %}%"></div>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        {{ project.done_count }}/{{ project.task_count }} {% trans "tareas" %}
+                    </p>
+                {% endif %}
+            </a>
+        {% empty %}
+            <div class="card col-span-full text-sm text-gray-500 dark:text-gray-400">
+                {% trans "No hay proyectos cerrados." %}
+            </div>
+        {% endfor %}
+    </div>
 </div>
 {% endblock %}

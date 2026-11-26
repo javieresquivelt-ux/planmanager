@@ -23,10 +23,21 @@ _ROLE_COLORS: dict[str, str] = {
     "VIEWER": "badge-slate",
 }
 
+_PROJECT_STATUS_COLORS: dict[str, str] = {
+    "OPEN": "badge-green",
+    "ON_HOLD": "badge-amber",
+    "CLOSED": "badge-slate",
+}
+
 
 @register.filter
 def status_badge(value: str) -> str:
     return f"badge {_STATUS_COLORS.get(value, 'badge-slate')}"
+
+
+@register.filter
+def project_status_badge(value: str) -> str:
+    return f"badge {_PROJECT_STATUS_COLORS.get(value, 'badge-slate')}"
 
 
 @register.filter
