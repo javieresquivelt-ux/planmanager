@@ -4,18 +4,25 @@ Aplicación web de **gestión de proyectos** con control de acceso basado en **r
 
 ---
 
-## Características (MVP extendido)
+## Características (MVP extendido y evolutivo)
 
-- **Autenticación** por email (registro, login, logout, perfil).
-- **Proyectos**: CRUD completo con membresías y roles.
-- **Tareas**: estado, prioridad, fecha límite y **asignación múltiple** (varios responsables por tarea).
-- **Comentarios** en tareas (sin recarga, vía HTMX).
-- **Adjuntos** de archivos en tareas.
-- **Avatares**: imagen de perfil (redimensionada y circular) visible en tareas, miembros y comentarios.
-- **Dashboard** por usuario con métricas (estados, prioridades, actividad).
-- **Roles por proyecto**: `OWNER`, `MANAGER`, `MEMBER`, `VIEWER`.
-- **UI responsive** (mobile-first) con **dark/light mode**.
-- **Internacionalización**: español (default) e inglés.
+- **Autenticación y Perfil**: Login por email (sin username), registro con validaciones de contraseña estilizadas y avatar de perfil circular editable.
+- **Roles Globales de Plataforma**: `SUPERADMIN`, `JP` (Jefe de Proyecto) y `MEMBER`.
+- **Panel de Gestión de Usuarios y Roles**: Administración centralizada para Superadministradores (`/users/management/`) con cards táctiles para móvil y tabla en escritorio.
+- **Ciclo de Vida de Proyectos**: Estados **Abierto** (`OPEN`), **En pausa** (`ON_HOLD`) y **Cerrado** (`CLOSED`) con selector rápido de cambio de estado para JPs y administradores.
+- **Segmentación por Pestañas en Dashboard y Mis Proyectos**: Pestañas reactivas con Alpine.js para **Activos** y **Cerrados**, excluyendo automáticamente los proyectos cerrados de las listas de actividad reciente.
+- **Visualizador Dual de Tareas (Kanban + Lista)**:
+  - **Tablero Kanban** de 4 columnas (*Por hacer, En progreso, En revisión, Hecho*) con contadores de estado y cambio ágil con HTMX.
+  - **Vista Lista** compacta vertical.
+  - **Modo Adaptativo al Dispositivo**: En celulares (`< 768px`) se abre en vista Lista por defecto; en ordenadores (`>= 768px`) se abre en Kanban.
+- **Tareas**: Prioridades, fechas límite, formulario colapsable y **asignación múltiple** de miembros con avatares superpuestos.
+- **Moderación de Comentarios**:
+  - Edición en línea (*in-situ*) para el autor sin recargar la página.
+  - Eliminación con confirmación nativa para autores y moderadores (`MANAGER` y `OWNER`).
+- **Adjuntos**: Subida de archivos a `media/attachments/` con descarga directa.
+- **Navegación Global "Atrás / Volver"**: Botón/enlace estándar con flecha SVG y área táctil accesible en todas las vistas de la plataforma.
+- **Exportación de Datos**: Descarga de proyectos y membresías a formato CSV.
+- **UI Moderna y Accesible**: Tailwind CSS 3.4 con tema claro/oscuro persistente (sin FOUC) y soporte bilingüe completo (ES/EN).
 
 ---
 
@@ -113,6 +120,7 @@ erDiagram
         string password "Hash PBKDF2"
         string first_name "Nombre"
         string last_name "Apellido"
+        string global_role "SUPERADMIN, JP, MEMBER"
         boolean is_email_verified "Email verificado"
         string profile_image "ImageField -> media/avatars/"
         boolean is_active "Estado activo"
@@ -126,6 +134,7 @@ erDiagram
         int id PK
         string name "Nombre del proyecto"
         text description "Descripción detallada"
+        string status "OPEN, ON_HOLD, CLOSED"
         int owner_id FK "Usuario propietario"
         datetime created_at "Fecha creación"
         datetime updated_at "Última modificación"
@@ -200,21 +209,33 @@ erDiagram
 
 ---
 
-## Matriz de roles (por proyecto)
+## Control de acceso y matriz de roles
 
-| Acción | OWNER | MANAGER | MEMBER | VIEWER |
+### Roles Globales (Plataforma)
+- **Superadmin:** Administrador global institucional; acceso total a Django Admin y al panel de gestión de roles (`/users/management/`).
+- **Jefe de Proyecto (JP):** Rol con autorización para crear proyectos. Al crear un proyecto, el JP asume el rol de `MANAGER`, adquiriendo gestión total sobre tareas, estados y miembros.
+- **Miembro:** Usuario general colaborador; no puede crear proyectos independientes pero participa con plenos derechos en los proyectos en los que es invitado.
+
+### Matriz de Roles (por proyecto)
+
+| Acción | OWNER | MANAGER (JP) | MEMBER | VIEWER |
 |---|---|---|---|---|
 | Ver proyecto/tareas | ✅ | ✅ | ✅ | ✅ |
 | Crear tarea | ✅ | ✅ | ✅ | ❌ |
 | Editar tarea | ✅ | ✅ | ✅ (propias) | ❌ |
 | Asignar tarea | ✅ | ✅ | ❌ | ❌ |
-| Cambiar estado/prioridad | ✅ | ✅ | ✅ (propias) | ❌ |
-| Comentar | ✅ | ✅ | ✅ | ❌ |
+| Cambiar estado/prioridad de tarea | ✅ | ✅ | ✅ (propias) | ❌ |
+| Comentar en tarea | ✅ | ✅ | ✅ | ❌ |
+| Editar comentario propio | ✅ | ✅ | ✅ | ❌ |
+| Eliminar cualquier comentario | ✅ | ✅ | ❌ | ❌ |
+| Eliminar comentario propio | ✅ | ✅ | ✅ | ❌ |
 | Adjuntar archivo | ✅ | ✅ | ✅ | ❌ |
-| Gestionar miembros/roles | ✅ | ❌ | ❌ | ❌ |
-| Editar/eliminar proyecto | ✅ | ❌ | ❌ | ❌ |
+| Gestionar miembros y roles | ✅ | ✅ | ❌ | ❌ |
+| Cambiar estado de proyecto (Abierto/Pausa/Cerrado) | ✅ | ✅ | ❌ | ❌ |
+| Editar información de proyecto | ✅ | ✅ | ❌ | ❌ |
+| Eliminar proyecto definitivamente | ✅ | ❌ | ❌ | ❌ |
 
-El control de acceso se implementa con mixins `UserPassesTestMixin` (`projects/mixins.py`) y funciones puras en `projects/permissions.py`.
+El control de acceso se implementa de manera estricta en backend con mixins `UserPassesTestMixin` (`projects/mixins.py`) y funciones puras en `projects/permissions.py`.
 
 ---
 
