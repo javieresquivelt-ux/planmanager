@@ -48,7 +48,7 @@ class User(AbstractUser):
         _("rol global"),
         max_length=20,
         choices=GlobalRole.choices,
-        default=GlobalRole.MEMBER,
+        default=GlobalRole.JP,
         db_index=True,
     )
 

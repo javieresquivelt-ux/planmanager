@@ -99,16 +99,19 @@ def test_profile_image_upload(client, image_file, tmp_path):
 
 @pytest.mark.django_db
 def test_user_global_role_and_can_create_projects():
-    member = User.objects.create_user(email="member@example.com", password="pwd")
+    jp = User.objects.create_user(email="jp_default@example.com", password="pwd")
+    assert jp.global_role == User.GlobalRole.JP
+    assert jp.can_create_projects is True
+    assert jp.is_jp is True
+
+    member = User.objects.create_user(
+        email="member@example.com",
+        password="pwd",
+        global_role=User.GlobalRole.MEMBER,
+    )
     assert member.global_role == User.GlobalRole.MEMBER
     assert member.can_create_projects is False
     assert member.is_jp is False
-
-    jp = User.objects.create_user(
-        email="jp@example.com", password="pwd", global_role=User.GlobalRole.JP
-    )
-    assert jp.can_create_projects is True
-    assert jp.is_jp is True
 
     admin = User.objects.create_superuser(email="admin@example.com", password="pwd")
     assert admin.can_create_projects is True
@@ -116,7 +119,11 @@ def test_user_global_role_and_can_create_projects():
 
 @pytest.mark.django_db
 def test_user_management_view_permissions(client):
-    member = User.objects.create_user(email="member@example.com", password="pwd")
+    member = User.objects.create_user(
+        email="member@example.com",
+        password="pwd",
+        global_role=User.GlobalRole.MEMBER,
+    )
     jp = User.objects.create_user(
         email="jp@example.com", password="pwd", global_role=User.GlobalRole.JP
     )

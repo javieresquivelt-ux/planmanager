@@ -121,7 +121,11 @@ def test_create_project_by_jp_assigns_superadmin_as_owner():
 @pytest.mark.django_db
 def test_create_project_view_rbac_member_forbidden_jp_allowed(client):
     User.objects.create_superuser(email="admin@example.com", password="pwd")
-    member = User.objects.create_user(email="m@example.com", password="pwd")
+    member = User.objects.create_user(
+        email="m@example.com",
+        password="pwd",
+        global_role=User.GlobalRole.MEMBER,
+    )
     jp = User.objects.create_user(
         email="jp2@example.com", password="pwd", global_role=User.GlobalRole.JP
     )
