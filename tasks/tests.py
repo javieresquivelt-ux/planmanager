@@ -152,3 +152,60 @@ def test_task_list_displays_dates(client):
     assert "Límite:" in content or "Due:" in content
     assert "2026" in content
 
+
+@pytest.mark.django_db
+def test_task_list_kanban_columns_and_views(client):
+    owner, manager, member, viewer, project, task1 = _task_scenario()
+    task2 = Task.objects.create(
+        project=project,
+        title="Task In Progress",
+        status=Task.Status.IN_PROGRESS,
+        created_by=owner,
+    )
+    task3 = Task.objects.create(
+        project=project,
+        title="Task Done",
+        status=Task.Status.DONE,
+        created_by=owner,
+    )
+
+    client.force_login(owner)
+    url = reverse("tasks:list", kwargs={"project_pk": project.pk})
+    resp = client.get(url)
+    assert resp.status_code == 200
+
+    cols = resp.context["kanban_columns"]
+    assert len(cols) == 4
+    todo_col = next(c for c in cols if c["status"] == "TODO")
+    in_prog_col = next(c for c in cols if c["status"] == "IN_PROGRESS")
+    done_col = next(c for c in cols if c["status"] == "DONE")
+
+    assert task1 in todo_col["tasks"]
+    assert task2 in in_prog_col["tasks"]
+    assert task3 in done_col["tasks"]
+
+    content = resp.content.decode()
+    assert "Kanban" in content
+    assert "Lista" in content
+    assert "Task In Progress" in content
+    assert "Task Done" in content
+
+
+@pytest.mark.django_db
+def test_task_status_update_with_next_url(client):
+    owner, manager, member, viewer, project, task = _task_scenario()
+    client.force_login(owner)
+    status_url = reverse(
+        "tasks:status", kwargs={"project_pk": project.pk, "pk": task.pk}
+    )
+    list_url = reverse("tasks:list", kwargs={"project_pk": project.pk})
+
+    resp = client.post(
+        status_url,
+        {"status": "IN_PROGRESS", "next": list_url},
+    )
+    assert resp.status_code == 302
+    assert resp.url == list_url
+    task.refresh_from_db()
+    assert task.status == Task.Status.IN_PROGRESS
+
